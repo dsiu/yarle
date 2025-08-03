@@ -210,5 +210,5 @@ export const getTimeStampMoment = (resource: any): any => {
   return resource['resource-attributes'] &&
     resource['resource-attributes']['timestamp']
     ? Moment(resource['resource-attributes']['timestamp'])
-    : Moment();
+    : undefined
 };

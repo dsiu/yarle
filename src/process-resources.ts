@@ -9,6 +9,7 @@ import * as utils from './utils';
 import { yarleOptions } from './yarle';
 import { OutputFormat } from './output-format';
 import { EvernoteNoteData } from './models';
+import {setFileDates} from "./utils";
 
 const getResourceWorkDirs = (note: EvernoteNoteData) => {
   const pathSepRegExp = new RegExp(`\\${path.sep}`, 'g');
@@ -31,12 +32,12 @@ export const processResources = (note: EvernoteNoteData): string => {
       for (const resource of note.resource) {
         resourceHashes = {
           ...resourceHashes,
-          ...processResource(absoluteResourceWorkDir, resource)};
+          ...processResource(absoluteResourceWorkDir, resource, note)};
       }
     } else {
       resourceHashes = {
         ...resourceHashes,
-        ...processResource(absoluteResourceWorkDir, note.resource)};
+        ...processResource(absoluteResourceWorkDir, note.resource, note)};
     }
 
     for (const hash of Object.keys(resourceHashes)) {
@@ -70,11 +71,11 @@ const addMediaReference = (content: string, resourceHashes: any, hash: any, work
   return updatedContent;
 };
 
-const processResource = (workDir: string, resource: any): any => {
+const processResource = (workDir: string, resource: any, note: EvernoteNoteData): any => {
     const resourceHash: any = {};
     const data = resource.data?.$text || '';
 
-    const accessTime = utils.getTimeStampMoment(resource);
+    const accessTime = utils.getTimeStampMoment(resource) || utils.getCreationTime(note)
     const resourceFileProps = utils.getResourceFileProperties(workDir, resource);
     let fileName = resourceFileProps.fileName;
 
@@ -86,7 +87,8 @@ const processResource = (workDir: string, resource: any): any => {
     fs.writeFileSync(absFilePath, data, 'base64');
 
     const atime = accessTime.valueOf() / 1000;
-    fs.utimesSync(absFilePath, atime, atime);
+    utils.setFileDates(absFilePath, note.created, accessTime);
+    // fs.utimesSync(absFilePath, atime, atime);
 
     if (resource.recognition && fileName) {
       const hashIndex = resource.recognition.match(/[a-f0-9]{32}/);
