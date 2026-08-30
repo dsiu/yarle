@@ -11,6 +11,8 @@ import { filterByNodeName } from './filter-by-nodename';
 import { getAttributeProxy } from './get-attribute-proxy';
 import { isTOC } from './../../utils/is-toc';
 import { isHeptaOrObsidianOutput } from './../../utils/is-hepta-or-obsidian-output';
+import { mdLinkTarget } from './../md-link-target';
+import { isStandardMdFamily } from './../is-standard-md-family';
 import sanitize from 'sanitize-filename';
 
 export const removeBrackets = (str: string): string => {
@@ -116,13 +118,13 @@ export const wikiStyleLinksRule = {
                 return `<YARLE_EVERNOTE_LINK>${mdKeyword}[[${linkedNoteId}${extension}${renderedObsidianDisplayName}]]<-->[${displayName}](${linkedNoteId}${extension})</YARLE_EVERNOTE_LINK>`
             }
 
-            return `${mdKeyword}[${displayName}](${linkedNoteId}${extension})`;
+            return `${mdKeyword}[${displayName}](${mdLinkTarget(`${linkedNoteId}${extension}`)})`;
         }
 
         return (isHeptaOrObsidianOutput())
         ? `${mdKeyword}[[${realValue}${renderedObsidianDisplayName}]]`
-        : (yarleOptions.outputFormat === OutputFormat.StandardMD || yarleOptions.outputFormat === OutputFormat.LogSeqMD)
-            ? `${mdKeyword}[${displayName}](${realValue})`
+        : (isStandardMdFamily())
+            ? `${mdKeyword}[${displayName}](${mdLinkTarget(realValue)})`
             : `${mdKeyword}[[${realValue}]]`;
     },
 };
