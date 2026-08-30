@@ -4,6 +4,7 @@ import { ObsidianMD } from "./ObsidianMD";
 import { StandardMD } from "./StandardMD";
 import { Heptabase } from "./Heptabase";
 import { Tana } from "./Tana"; 
+import { PortableMD } from "./PortableMD";
 
 import { LanguageItems } from "./outputLanguages";
 
@@ -16,6 +17,8 @@ export class LanguageFactory {
                 return new Heptabase();
             case OutputFormat.Tana:
                 return new Tana();
+            case OutputFormat.PortableMD:
+                return new PortableMD();
             default:
                 return new StandardMD();
         }
