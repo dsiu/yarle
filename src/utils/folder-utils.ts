@@ -14,8 +14,47 @@ import { loggerInfo } from './loggerInfo';
 export const paths: Path = {};
 const MAX_PATH = 249;
 
+/**
+ * Longest `.resources` directory stem, in UTF-16 code units — the unit that both
+ * `String.prototype.slice` and the filesystem count.
+ *
+ * APFS/HFS+ allow 255 units per path component (measured: 255 CJK chars = 765
+ * UTF-8 bytes is accepted, 256 is not — the limit is units, NOT bytes), and the
+ * stem carries a 10-unit `.resources` suffix, so 245 is the hard ceiling.
+ *
+ * 150 leaves a wide margin: worst case measured at 649 bytes of a 1024-byte
+ * PATH_MAX with an all-CJK stem, while truncating only ~0.1% of real note titles
+ * (p99 = 99 chars across 7,005 notes). The previous value of 50 truncated 29%.
+ *
+ * Keep this generous. The stem is the ONLY thing separating two notes' resource
+ * directories, so every truncation is a chance for unrelated notes to share one
+ * directory and overwrite each other's attachments. Truncation also used to sever
+ * a closing parenthesis mid-name, which silently breaks the Markdown link — see
+ * `md-link-target.ts`.
+ *
+ * `find_orphaned_resources.py` reconstructs these names and carries the same
+ * number; change both together.
+ */
+const RESOURCE_DIR_MAX_LEN = 150;
+
+/**
+ * Truncate without splitting a surrogate pair — half an emoji is not a character,
+ * and a lone surrogate is not valid UTF-8 for the filesystem to store.
+ */
+const truncateResourceStem = (stem: string): string => {
+  if (stem.length <= RESOURCE_DIR_MAX_LEN) {
+    return stem;
+  }
+
+  const cut = stem.slice(0, RESOURCE_DIR_MAX_LEN);
+  const lastUnit = cut.charCodeAt(cut.length - 1);
+  const endsOnLoneHighSurrogate = lastUnit >= 0xD800 && lastUnit <= 0xDBFF;
+
+  return endsOnLoneHighSurrogate ? cut.slice(0, -1) : cut;
+};
+
 export const getResourceDir = (dstPath: string, note: EvernoteNoteData): string => {
-  return getNoteName(dstPath, note).replace(/\s/g, '_').substr(0, 50);
+  return truncateResourceStem(getNoteName(dstPath, note).replace(/\s/g, '_'));
 };
 
 export const truncatFileName = (fileName: string, uniqueId: string): string => {
