@@ -82,9 +82,39 @@ const truncateFilePath = (note: EvernoteNoteData, fileName: string, fullFilePath
   // -11 is the nanoid 5 char +_+ the max possible extension of the note (.md vs .html)
 };
 
+/**
+ * `sanitize-filename` (inside normalizeFilenameString) caps a name at 255 UTF-8 BYTES. Applied to
+ * "<title>.md", a long CJK title (3 bytes per char) hits that cap and the cut lands inside the
+ * extension: two notes were written as extensionless files, invisible to every `*.md` tool.
+ * Sanitize the stem on its own, inside a byte budget that always leaves room for ".<extension>".
+ */
+const FILENAME_MAX_BYTES = 255;
+
+const truncateUtf8 = (text: string, maxBytes: number): string => {
+  let bytes = 0;
+  let out = '';
+  for (const char of text) { // iterates code points, so a surrogate pair is never split
+    bytes += Buffer.byteLength(char, 'utf8');
+    if (bytes > maxBytes) {
+      break;
+    }
+    out += char;
+  }
+
+  return out;
+};
+
+const normalizeFileNameKeepingExtension = (fileName: string, extension: string): string => {
+  const suffix = `.${extension}`;
+  const stem = fileName.endsWith(suffix) ? fileName.slice(0, -suffix.length) : fileName;
+  const budget = FILENAME_MAX_BYTES - Buffer.byteLength(suffix, 'utf8');
+
+  return `${truncateUtf8(normalizeFilenameString(stem), budget)}${suffix}`;
+};
+
 const getFilePath = (dstPath: string, note: EvernoteNoteData, extension: string): string => {
   const fileName = getNoteFileName(dstPath, note, extension);
-  const fullFilePath = `${dstPath}${path.sep}${normalizeFilenameString(fileName)}`;
+  const fullFilePath = `${dstPath}${path.sep}${normalizeFileNameKeepingExtension(fileName, extension)}`;
 
   return fullFilePath.length < MAX_PATH ? fullFilePath : truncateFilePath(note, fileName, fullFilePath);
 };
