@@ -27,6 +27,14 @@ export const processNode = (pureNote: EvernoteNoteData, notebookName: string): v
   const runtimeProps = RuntimePropertiesSingleton.getInstance();
   runtimeProps.setCurrentNoteName(pureNote.title);
 
+  // Evernote splits a note body into several CDATA sections when the HTML itself contains
+  // "]]>" (common in web clips with inline scripts), and the parser then hands us an array.
+  // Join it once here: processResources() and others read pureNote.content directly and
+  // threw "content.match is not a function", silently dropping the whole note.
+  if (Array.isArray(pureNote.content)) {
+    pureNote.content = pureNote.content.join('');
+  }
+
 
   let noteData: NoteData = {
     created: pureNote.created,
@@ -65,8 +73,12 @@ export const processNode = (pureNote: EvernoteNoteData, notebookName: string): v
     }
 
   } catch (e) {
+    // JSON.stringify(Error) is "{}", which used to hide every failure's cause; log the stack,
+    // and on stderr too, so a dropped note cannot pass for a successful run.
+    const detail = e instanceof Error ? (e.stack || e.message) : JSON.stringify(e);
+    loggerInfo(`Failed to convert note: ${noteData.title}, ${detail}`);
     // tslint:disable-next-line:no-console
-    loggerInfo(`Failed to convert note: ${noteData.title}, ${JSON.stringify(e)}`);
+    console.error(`YARLE FAILED TO CONVERT NOTE: ${noteData.title}\n${detail}`);
   }
   // tslint:disable-next-line:no-console
   const dateFinished: Date = new Date();
