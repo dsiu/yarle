@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import fs from 'fs';
 import fsExtra from 'fs-extra';
 import * as path from 'path';
@@ -5,7 +6,7 @@ import * as path from 'path';
 import { Path } from '../paths';
 import { yarleOptions } from '../yarle';
 
-import { getNoteFileName, getNoteName, getUniqueId, normalizeFilenameString } from './filename-utils';
+import { getNoteFileName, getNoteName, normalizeFilenameString } from './filename-utils';
 import { OutputFormat } from './../output-format';
 import { RuntimePropertiesSingleton } from './../runtime-properties';
 import { EvernoteNoteData } from '../models';
@@ -68,17 +69,36 @@ export const truncatFileName = (fileName: string, uniqueId: string): string => 
   return fullPath.length <  MAX_PATH ? fileName : `${fileName.slice(0, MAX_PATH - 11)}_${uniqueId}.md`;
 };
 
-const truncateFilePath = (note: EvernoteNoteData, fileName: string, fullFilePath: string): string => {
+/**
+ * A 5-character id for a note whose path is too long, derived from the note itself.
+ *
+ * The html path of one note is computed twice — once for `original_html` in the template, once
+ * when the file is saved — so a random id (the old fallback) gave the link and the file two
+ * different names, and the link never resolved. Hashing the pre-truncation file name (it already
+ * carries any `.N` dedup index), the created date and the title gives every call for the same note
+ * the same id, and the same name on every rebuild.
+ */
+const stableNoteId = (note: EvernoteNoteData, fileName: string): string =>
+  createHash('md5')
+    .update(`${fileName}\u0000${note.created}\u0000${note.title}`)
+    .digest('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .slice(0, 5);
+
+const truncateFilePath = (note: EvernoteNoteData, fileName: string, fullFilePath: string, extension: string): string => {
   const noteIdNameMap = RuntimePropertiesSingleton.getInstance();
 
-  const noteIdMap = noteIdNameMap.getNoteIdNameMapByNoteTitle(normalizeFilenameString(note.title))[0] || {uniqueEnd: getUniqueId()};
-
+  const noteIdMap = noteIdNameMap.getNoteIdNameMapByNoteTitle(normalizeFilenameString(note.title))[0]
+    || {uniqueEnd: stableNoteId(note, fileName)};
 
   if (fileName.length <= 11) {
     throw Error('FATAL: note folder directory path exceeds the OS limitation. Please pick a destination closer to the root folder.');
   }
 
-  return `${fullFilePath.slice(0, MAX_PATH - 11)}_${noteIdMap.uniqueEnd}.md`;
+  // Keep the caller's extension: this used to append `.md` to every file, so an `original_html`
+  // sidecar with a long title was written as `<…>.md` and counted as a note by every `*.md` tool.
+  return `${fullFilePath.slice(0, MAX_PATH - 11)}_${noteIdMap.uniqueEnd}.${extension}`;
   // -11 is the nanoid 5 char +_+ the max possible extension of the note (.md vs .html)
 };
 
@@ -116,7 +136,7 @@ const getFilePath = (dstPath: string, note: EvernoteNoteData, extension: string)
   const fileName = getNoteFileName(dstPath, note, extension);
   const fullFilePath = `${dstPath}${path.sep}${normalizeFileNameKeepingExtension(fileName, extension)}`;
 
-  return fullFilePath.length < MAX_PATH ? fullFilePath : truncateFilePath(note, fileName, fullFilePath);
+  return fullFilePath.length < MAX_PATH ? fullFilePath : truncateFilePath(note, fileName, fullFilePath, extension);
 };
 
 export const getMdFilePath = (note: EvernoteNoteData): string => {
