@@ -13,7 +13,9 @@ export const applyTemplateOnBlock = ({
     return template
       .replace(new RegExp(`${startBlockPlaceholder}`, 'g'), '')
       .replace(new RegExp(`${endBlockPlaceholder}`, 'g'), '')
-      .replace(new RegExp(`${valuePlaceholder}`, 'g'), value);
+      // A function, not the string: in a replacement string `$$`, `$&`, `$'`, `` $` `` and `$<n>`
+      // are patterns, so a note body with "$$$$" (a price rating) came out as "$$".
+      .replace(new RegExp(`${valuePlaceholder}`, 'g'), () => value);
 
   }
   const reg = `${startBlockPlaceholder}([\\d\\D])(?:.|(\r\n|\r|\n))*?(?=${endBlockPlaceholder})${endBlockPlaceholder}`;

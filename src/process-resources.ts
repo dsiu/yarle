@@ -68,9 +68,11 @@ const addMediaReference = (content: string, resourceHashes: any, hash: any, work
     const height = matchedElements[0].match(/height="(\w+)"/);
     const heightParam = height ? ` height="${height[1]}"` : '';
 
-    updatedContent = content.replace(re, `<img src="${src}"${widthParam}${heightParam} alt="${resourceHashes[hash].fileName}">`);
+    const img = `<img src="${src}"${widthParam}${heightParam} alt="${resourceHashes[hash].fileName}">`;
+    updatedContent = content.replace(re, () => img);
   } else {
-    updatedContent = content.replace(re, `<a href="${src}" type="file">${resourceHashes[hash].fileName}</a>`);
+    const link = `<a href="${src}" type="file">${resourceHashes[hash].fileName}</a>`;
+    updatedContent = content.replace(re, () => link);
   }
 
   return updatedContent;
