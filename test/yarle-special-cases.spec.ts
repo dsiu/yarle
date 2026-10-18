@@ -2150,6 +2150,30 @@ dateFormat: undefined,
 
   });
 
+  it('really long filename - original html keeps its extension and its link resolves', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-long-note.enex` ],
+      outputDir: 'out',
+      templateFile: `${testDataFolder}keephtml-template.tmpl`,
+      keepOriginalHtml: true,
+      outputFormat: OutputFormat.ObsidianMD,
+      skipEnexFileNameFromOutputPath: false,
+    };
+    await yarle.dropTheRope(options);
+    const prefix = 'This is going to be a really really';
+    const noteDir = `${__dirname}/../out/notes/test-long-note`;
+
+    const resources = fs.readdirSync(`${noteDir}/_resources`).filter(f => f.startsWith(prefix));
+    assert.deepEqual(resources.filter(f => f.endsWith('.md')), [], 'sidecar was written as .md');
+    assert.equal(resources.filter(f => f.endsWith('.html')).length, 1);
+
+    const mdFile = fs.readdirSync(noteDir).find(f => f.startsWith(prefix) && f.endsWith('.md'));
+    const md = fs.readFileSync(`${noteDir}/${mdFile}`, 'utf8');
+    const link = md.match(/\.\/_resources\/([^\]\)\n]*?\.html)/);
+    assert.ok(link, 'no link to the original html in the note');
+    assert.ok(fs.existsSync(`${noteDir}/_resources/${link[1]}`), `link does not resolve: ${link[1]}`);
+  });
+
   it('really long filename - with link', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-long-linked-notes.enex` ],
