@@ -2152,6 +2152,25 @@ dateFormat: undefined,
     assert.ok(fs.existsSync(`${noteDir}/${link[1]}`), `link does not resolve: ${link[1]}`);
   });
 
+  it('original html: embedded data-url images point into the resources folder', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-dataurl-keep-html.enex` ],
+      outputDir: 'out',
+      templateFile: `${testDataFolder}keephtml-template.tmpl`,
+      keepOriginalHtml: true,
+      outputFormat: OutputFormat.ObsidianMD,
+    };
+    await yarle.dropTheRope(options);
+    const resDir = `${__dirname}/../out/notes/test-dataurl-keep-html/_resources`;
+    const html = fs.readFileSync(`${resDir}/clip with embedded image.html`, 'utf8');
+
+    // the html sits inside _resources, so its links must not start with ./_resources/
+    assert.ok(!html.includes('src="./_resources/'), 'html still has a note-relative image path');
+    const src = html.match(/src="(\.\/[^"]*embedded[^"]*\.svg)"/);
+    assert.ok(src, 'no embedded image in the html');
+    assert.ok(fs.existsSync(`${resDir}/${src[1]}`), `image does not resolve from the html: ${src[1]}`);
+  });
+
   it('really long filename', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-long-note.enex` ],

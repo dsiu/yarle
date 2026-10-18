@@ -1,6 +1,7 @@
 import { yarleOptions } from './yarle';
 import { NoteData } from './models/NoteData';
 import { generateHtmlContent } from './utils';
+import { escapeStringRegexp } from './utils/escape-string-regexp';
 
 const fontFamily = 'Arial,"Helvetica Neue",Helvetica,sans-serif';
 const fontSize = '12pt';
@@ -15,7 +16,12 @@ export const convert2Html = (noteData: NoteData): void => {
   noteData.htmlContent = noteData.htmlContent.replace(/<(a href|img src)=".\/_resources\//, '<$1="./')
   */
 
-  noteData.htmlContent = `<div${m[1]}>${noteData.htmlContent.replace(/<(a href|img src)=".\/_resources\//g, '<$1="./')}</div>`;
+  // The html is saved inside the resources folder, so note-relative `./<resourcesDir>/x` links become
+  // `./x`. Match any attributes before src/href: data-URL resources are written as
+  // `<img yarle-file-resource="true" src=…>` and were skipped, so their images were broken in the html.
+  const resourceLink = new RegExp(
+    `(<(?:a|img)\\b[^>]*?\\s(?:href|src)=")\\.\\/${escapeStringRegexp(yarleOptions.resourcesDir)}\\/`, 'g');
+  noteData.htmlContent = `<div${m[1]}>${noteData.htmlContent.replace(resourceLink, '$1./')}</div>`;
 
   let url = noteData.sourceUrl;
   if (url) {
