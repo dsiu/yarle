@@ -39,8 +39,8 @@ const fixImagesInLink = (content: string):string => {
       const dimensions = match[2] || ''; // Use empty string if dimensions are not present
       const parenthesesContent = match[3];
         updatedContent = (dimensions === "")
-          ? updatedContent.replace(`[![[${bracketContent}]]](${parenthesesContent})`, `![${parenthesesContent}](${bracketContent})`)
-          : updatedContent.replace(`[![[${bracketContent}|${dimensions}]]](${parenthesesContent})`, `![${parenthesesContent}\\|${dimensions}](${bracketContent})`)
+          ? updatedContent.replace(`[![[${bracketContent}]]](${parenthesesContent})`, () => `![${parenthesesContent}](${bracketContent})`)
+          : updatedContent.replace(`[![[${bracketContent}|${dimensions}]]](${parenthesesContent})`, () => `![${parenthesesContent}\\|${dimensions}](${bracketContent})`)
   
     }
     return updatedContent;

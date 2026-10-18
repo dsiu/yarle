@@ -2132,6 +2132,26 @@ dateFormat: undefined,
       fs.readFileSync(`${__dirname}/data/test-old-note.md`, 'utf8'),
     );
   });
+  it('dollar signs in the title and body are kept literally', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-dollar-signs.enex` ],
+      outputDir: 'out',
+      templateFile: `${testDataFolder}full_template.templ`,
+      isMetadataNeeded: true,
+      outputFormat: OutputFormat.ObsidianMD,
+    };
+    await yarle.dropTheRope(options);
+    const noteDir = `${__dirname}/../out/notes/test-dollar-signs`;
+    const md = fs.readFileSync(`${noteDir}/Price $29 and $1M plan.md`, 'utf8');
+
+    // String.replace reads `$$` as `$` and `$1`/`$2` as capture groups when the replacement is a string
+    assert.ok(md.includes('Rating: $$$$ for dinner, $$$ for lunch.'), 'body dollar signs were collapsed');
+    const link = md.match(/(\.\/_resources\/[^\])\n]*\.png)/);
+    assert.ok(link, 'no link to the attachment');
+    assert.ok(link[1].includes('Price_$29_and_$1M_plan.resources'), `title mangled in link: ${link[1]}`);
+    assert.ok(fs.existsSync(`${noteDir}/${link[1]}`), `link does not resolve: ${link[1]}`);
+  });
+
   it('really long filename', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-long-note.enex` ],

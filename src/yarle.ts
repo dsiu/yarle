@@ -164,7 +164,7 @@ export const parseStream = async (options: YarleOptions, enexSource: string): Pr
           const fileContent = fs.readFileSync(currentNotePath, 'UTF-8');
           const sortedTasks = new Map([...tasks[task]].sort());
 
-          let updatedContent = fileContent.replace(taskPlaceholder, [...sortedTasks.values()].join('\n'));
+          let updatedContent = fileContent.replace(taskPlaceholder, () => [...sortedTasks.values()].join('\n'));
 
           const languageFactory  = new LanguageFactory();
           const language = languageFactory.createLanguage(yarleOptions.outputFormat)

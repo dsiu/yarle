@@ -86,7 +86,7 @@ export const applyLinks = (options: YarleOptions, outputNotebookFolders: Array<s
                 }
                 else {
                     const regexp = new RegExp(escapeStringRegexp(linkName), 'g');
-                    updatedContent = updatedContent.replace(regexp, realFileNameInContent);
+                    updatedContent = updatedContent.replace(regexp, () => realFileNameInContent);
                 }
                 
                 if ((`${fileName}.md` === targetFile || targetFile === linkProps.title) &&
