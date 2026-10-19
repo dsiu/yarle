@@ -2171,6 +2171,31 @@ dateFormat: undefined,
     assert.ok(fs.existsSync(`${resDir}/${src[1]}`), `image does not resolve from the html: ${src[1]}`);
   });
 
+  it('data-url link around an attachment keeps both files and links each', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-dataurl-link-over-attachment.enex` ],
+      outputDir: 'out',
+      templateFile: `${testDataFolder}keephtml-template.tmpl`,
+      keepOriginalHtml: true,
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const noteDir = `${__dirname}/../out/notes/test-dataurl-link-over-attachment`;
+    const resDir = `${noteDir}/_resources/clip_with_data_link_around_attachment.resources`;
+    const read = (f: string) => fs.readFileSync(`${resDir}/${f}`, 'utf8');
+
+    // the data link's name came from the attachment's <img alt> inside it, so it overwrote it
+    assert.ok(read('screenshot.png').includes('attachment: the real enex resource'), 'attachment overwritten');
+    assert.ok(read('screenshot.1.png').includes('inline: the body data url image'), 'data-url image missing');
+    const md = fs.readFileSync(`${noteDir}/clip with data link around attachment.md`, 'utf8');
+    assert.ok(md.includes('resources/screenshot.png)'), 'no link to the attachment');
+    // ` href=` lost its space (`<ayarle-file-resource=`), so the link to the data image vanished
+    assert.ok(md.includes('resources/screenshot.1.png)'), 'no link to the data-url image');
+    const html = fs.readFileSync(`${noteDir}/_resources/clip with data link around attachment.html`, 'utf8');
+    assert.ok(html.includes('<a yarle-file-resource="true" href="./clip_with_data_link_around_attachment.resources/screenshot.1.png"'),
+      'html link to the data-url image is broken');
+  });
+
   it('really long filename', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-long-note.enex` ],

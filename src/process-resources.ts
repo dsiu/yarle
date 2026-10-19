@@ -127,7 +127,9 @@ export const prepareContentByExtractingDataUrlResources = (
     const fileName = createResourceFromData(argument, match, mediatype, encoding === ';base64', data, absoluteResourceWorkDir, note);
     const argValue = `${relativeResourceWorkDir}${yarleOptions.pathSeparator}${fileName}`;
 
-    return `yarle-file-resource="true" ${argument}="${argValue}"${postfix}`;
+    // The match runs from the space before href to the closing </a>: put both back, or `<a href=`
+    // becomes the unparseable `<ayarle-file-resource=` and the link vanishes from the .md and html.
+    return ` yarle-file-resource="true" ${argument}="${argValue}"${postfix}</a>`;
   });
   // src|href="data:image/svg+xml;base64,..." --> src="resourceDir/fileName"
   return content.replace(/(src)="data:([^;,]*)(;base64)?,([^"]*)"/g, (match,argument, mediatype, encoding, data) => {
@@ -159,6 +161,10 @@ const createResourceFromData = (
     if (baseNameCandidate)
     fileName = baseNameCandidate
   }
+  // The alt above is read from anywhere up to </a>, so it is often the alt of an attachment's
+  // <img> that processResources() already put inside this link: the data would then be written
+  // over that attachment. Never reuse a name that is already on disk.
+  fileName = getUnusedFileName(absoluteResourceWorkDir, fileName);
   const absFilePath = `${absoluteResourceWorkDir}${path.sep}${fileName}`;
 
   if (!base64 && !data.startsWith('&lt;svg')) { // TODO: handle <svg, tags, they may be checkboxes
@@ -173,7 +179,23 @@ const createResourceFromData = (
   return fileName;
 };
 
-const extensionForMimeType = (mediatype: string): string => {
+// name.ext -> name.N.ext (the index convention of getResourceFileProperties) until it is free
+const getUnusedFileName = (dir: string, fileName: string): string => {
+  if (!fs.existsSync(`${dir}${path.sep}${fileName}`)) {
+    return fileName;
+  }
+  const lastIdx = fileName.lastIndexOf('.');
+  const stem = lastIdx > 0 ? fileName.slice(0, lastIdx) : fileName;
+  const ext = lastIdx > 0 ? fileName.slice(lastIdx) : '';
+  let index = Math.max(Number(utils.getFileIndex(dir, stem)) || 1, 1);
+  while (fs.existsSync(`${dir}${path.sep}${stem}.${index}${ext}`)) {
+    index++;
+  }
+
+  return `${stem}.${index}${ext}`;
+};
+
+const extensionForMimeType =(mediatype: string): string => {
   // image/jpeg or image/svg+xml or audio/wav or ...
   const subtype = mediatype.split('/').pop(); // jpeg or svg+xml or wav
 
