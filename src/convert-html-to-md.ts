@@ -90,8 +90,10 @@ const fixSublists = (node: HTMLElement) => {
 
 export const convertHtml2MdContent = (yarleOptions: YarleOptions, htmlContent: string): string => {
 
+    // Close every self-closing <a …/>: an HTML parser reads it as an opening tag, so a link left
+    // open swallows the rest of the note as its link text (this replaced only the first one).
     const content = htmlContent.replace(/<!DOCTYPE en-note [^>]*>/, '<!DOCTYPE html>')
-      .replace(/(<a [^>]*)\/>/, '$1></a>').replace(/<div[^\/\<]*\/>/g, '');
+      .replace(/(<a [^>]*)\/>/g, '$1></a>').replace(/<div[^\/\<]*\/>/g, '');
 
     const contentNode = new JSDOM(fixSublistsInContent(content)).window.document
       .getElementsByTagName('en-note').item(0) as any as HTMLElement;

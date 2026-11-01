@@ -50,9 +50,7 @@ const getEvernoteUniqueId = (value: string): string => {
         ? [urlSpl[0],urlSpl[1]]
         : [urlSpl[1],urlSpl[2]]).join('/')
 }
-export const wikiStyleLinksRule = {
-    filter: filterByNodeName('A'),
-    replacement: (content: any, node: any) => {
+const linkReplacement = (content: any, node: any): string => {
         const nodeProxy = getAttributeProxy(node);
         let internalTurndownedContent =
             getTurndownService(yarleOptions).turndown(removeBrackets(node.innerHTML));
@@ -126,7 +124,34 @@ export const wikiStyleLinksRule = {
         : (isStandardMdFamily())
             ? `${mdKeyword}[${displayName}](${mdLinkTarget(realValue)})`
             : `${mdKeyword}[[${realValue}]]`;
-    },
+};
+
+// A link whose content starts with a heading becomes `## [heading](url)`, built from that first
+// token alone; the blocks after the heading inside the same link were dropped. Keep them, after
+// the heading link, as plain content.
+const contentAfterLeadingHeading = (node: any): string => {
+    if (!getAttributeProxy(node).href) {
+        return '';
+    }
+    // the same test linkReplacement makes, on the same bracket-stripped text
+    const linkText = removeDoubleBackSlashes(getTurndownService(yarleOptions).turndown(removeBrackets(node.innerHTML)));
+    const linkTokens = new marked.Lexer({}).lex(linkText) as any;
+    if (linkTokens.length === 0 || linkTokens[0]['type'] !== 'heading') {
+        return '';
+    }
+    const fullContent = getTurndownService(yarleOptions).turndown(node.innerHTML);
+    const tokens = new marked.Lexer({}).lex(fullContent) as any;
+    if (tokens.length === 0 || tokens[0]['type'] !== 'heading') {
+        return '';
+    }
+    const rest = fullContent.slice(tokens[0]['raw'].length).trim();
+
+    return rest ? `\n\n${rest}` : '';
+};
+
+export const wikiStyleLinksRule = {
+    filter: filterByNodeName('A'),
+    replacement: (content: any, node: any) => linkReplacement(content, node) + contentAfterLeadingHeading(node),
 };
 
 export const getShortLinkIfPossible = (token: any, value: string): string => {

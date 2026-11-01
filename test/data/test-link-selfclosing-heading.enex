@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export3.dtd">
+<en-export export-date="20261101T000000Z" application="Evernote" version="Evernote Mac 7.5 (457109)">
+<note><title>self-closing links</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd"><en-note><div>Home &gt; <a href="http://example.com/one"/> &gt; <a href="http://example.com/two"/> &gt; <a href="http://example.com/three"/></div><div><h2>Article headline</h2><p>The article body [with brackets] must survive.</p></div></en-note>]]></content><created>20150304T000000Z</created><updated>20150304T000000Z</updated><note-attributes><source-url>http://example.com/article</source-url></note-attributes></note>
+<note><title>heading inside a link</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd"><en-note><div><a href="http://example.com/post"><h2>Card headline</h2><p>Card teaser paragraph.</p><p>Second teaser line.</p></a></div></en-note>]]></content><created>20150305T000000Z</created><updated>20150305T000000Z</updated><note-attributes></note-attributes></note>
+</en-export>

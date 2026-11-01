@@ -2216,6 +2216,28 @@ dateFormat: undefined,
     assert.ok(/Goal in a div\n\t+\* hiring, hiring, hiring/.test(md), `child not nested under parent:\n${md}`);
   });
 
+  it('self-closing links stay empty and a heading link keeps the content after it', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-link-selfclosing-heading.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const noteDir = `${__dirname}/../out/notes/test-link-selfclosing-heading`;
+
+    // only the first <a …/> was closed, so the second swallowed the article as its link text
+    const clip = fs.readFileSync(`${noteDir}/self-closing links.md`, 'utf8');
+    assert.ok(clip.includes('Article headline'), `headline lost:\n${clip}`);
+    assert.ok(clip.includes('The article body \\[with brackets\\] must survive.'), `body lost or inside a link:\n${clip}`);
+    assert.ok(!/\]\(http:\/\/example\.com\/(two|three)\)/.test(clip), `article became link text:\n${clip}`);
+
+    // a link starting with a heading kept only `## [heading](url)`
+    const card = fs.readFileSync(`${noteDir}/heading inside a link.md`, 'utf8');
+    assert.ok(card.includes('## [Card headline](http://example.com/post)'), `heading link changed:\n${card}`);
+    assert.ok(card.includes('Card teaser paragraph.'), `content after the heading lost:\n${card}`);
+    assert.ok(card.includes('Second teaser line.'), `content after the heading lost:\n${card}`);
+  });
+
   it('really long filename', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-long-note.enex` ],
