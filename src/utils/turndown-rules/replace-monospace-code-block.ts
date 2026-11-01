@@ -59,12 +59,28 @@ export const monospaceCodeBlockRule = {
     },
 };
 */
+// A code block inside another one (a monospace line in an Evernote code block, or a monospace
+// <div> around a <pre>, which fences itself) opened a second fence: the inner ``` closed the
+// outer block, leaving an empty block and the code unfenced. Only the outermost one fences.
+const isInsideCodeBlock = (node: any): boolean => {
+    for (let parent = node.parentElement; parent; parent = parent.parentElement) {
+        if (parent.tagName === 'PRE' || (parent.tagName === 'DIV' && isMonospaceCodeBlock(parent))) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
+const fencesItself = (node: any): boolean =>
+    isMonospaceCodeBlock(node) && !isInsideCodeBlock(node) && node.getElementsByTagName('pre').length === 0;
+
 export const replaceMonospaceCodeBlock = (content: string, node: any): any => {
-    if (isMonospaceCodeBlock(node)) {
+    if (fencesItself(node)) {
         const previous = node.previousSibling;
-        const previousIsBlock = previous && previous.tagName === node.tagName && isMonospaceCodeBlock(previous);
+        const previousIsBlock = previous && previous.tagName === node.tagName && fencesItself(previous);
         const next = node.nextSibling;
-        const nextIsBlock = next && next.tagName === node.tagName && isMonospaceCodeBlock(next);
+        const nextIsBlock = next && next.tagName === node.tagName && fencesItself(next);
         if (previousIsBlock || nextIsBlock) {
             content = previousIsBlock ? `\n${content}` : `${markdownBlock}${content}`;
             content = nextIsBlock ? `${content}\n` : `${content}${markdownBlock}`;

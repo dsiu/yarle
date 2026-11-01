@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export3.dtd">
+<en-export export-date="20261102T000000Z" application="Evernote" version="Evernote Mac 7.5 (457109)">
+<note><title>nested code</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd"><en-note><div>one</div><div><pre><span style="font-family: 'courier new', courier, monospace;">  apache2 @2.2.25_0
+  bash @4.2.45_1</span></pre></div><div>two</div><div style="font-family: Monaco, monospace;-en-codeblock:true;"><div><span style="font-family: Monaco;">port install foo</span></div></div><div>three</div><div style="-en-codeblock:true;"><div>a = 1</div><div>b = 2</div></div><div>four</div></en-note>]]></content><created>20131018T043906Z</created><updated>20131018T043906Z</updated><note-attributes></note-attributes></note>
+</en-export>

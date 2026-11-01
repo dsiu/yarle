@@ -2348,6 +2348,24 @@ dateFormat: undefined,
     assert.ok(md.includes('付款方式\n\n| 信用卡類型 | 信用卡卡號 |\n| --- | --- |\n| VISA | …1234 |'), `caption breaks the table:\n${md}`);
   });
 
+  it('a code block nested in another opens one fence, not two', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-nested-code.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+      monospaceIsCodeBlock: true,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-nested-code/nested code.md`, 'utf8');
+
+    // the monospace <div> around a <pre> fenced it again: an empty block, then the code unfenced
+    assert.ok(md.includes('one\n\n```\n  apache2 @2.2.25_0\n  bash @4.2.45_1\n```\n\ntwo'), `pre in a monospace div:\n${md}`);
+    // likewise a monospace line inside an Evernote code block
+    assert.ok(md.includes('two\n```\nport install foo\n```\nthree'), `monospace line in a code block:\n${md}`);
+    assert.ok(md.includes('three\n```\na = 1\nb = 2\n```\nfour'), `plain code block changed:\n${md}`);
+    assert.ok(!/```\n\s*\n```/.test(md), `empty fence:\n${md}`);
+  });
+
   it('keeps underline and strikethrough set by CSS, <ins>, and <sup>/<sub>', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-decorations.enex` ],
