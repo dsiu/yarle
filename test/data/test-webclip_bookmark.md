@@ -1,6 +1,6 @@
 # Yarle
 
-akosbalasko/yarle: Yet Another Rope Ladder from Evernote
+**akosbalasko/yarle: Yet Another Rope Ladder from Evernote**
 ![[./_resources/Yarle.resources/unknown_filename.png]]
 
 ![[./_resources/Yarle.resources/unknown_filename.1.png]]<https://github.com/akosbalasko/yarle>

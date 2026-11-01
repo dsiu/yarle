@@ -14,14 +14,14 @@ Für eine Terminalserver-Umgebung brauchte ich einen anderen Standarddrucker - d
 
 * * *
 
-Kommentare
+**Kommentare**
 
 
 
-Jojo
+**Jojo**
 
 148 Tage zuvor
-Punkte 0![http://znil.net/index.php?title=Spezial:Anmelden&returnto=Dummy_Drucker_%2F_Nirwana_Drucker_%2F_NUL_oder_NULL_Drucker_anlegen_%2F_einrichten\|19x18](../_filesFromEN/thumbs-up.gif)![http://znil.net/index.php?title=Spezial:Anmelden&returnto=Dummy_Drucker_%2F_Nirwana_Drucker_%2F_NUL_oder_NULL_Drucker_anlegen_%2F_einrichten\|19x18](../_filesFromEN/thumbs-down.gif)
+**Punkte 0![http://znil.net/index.php?title=Spezial:Anmelden&returnto=Dummy_Drucker_%2F_Nirwana_Drucker_%2F_NUL_oder_NULL_Drucker_anlegen_%2F_einrichten\|19x18](../_filesFromEN/thumbs-up.gif)![http://znil.net/index.php?title=Spezial:Anmelden&returnto=Dummy_Drucker_%2F_Nirwana_Drucker_%2F_NUL_oder_NULL_Drucker_anlegen_%2F_einrichten\|19x18](../_filesFromEN/thumbs-down.gif)**
 
 Super Anleitung. Brauchte einen Dummy Drucker für Auftragsbestätigungen die die Branchensoftware zum buchen benötigt, aber ich nicht als Papierausdruck. Hatte es sonst mit einem Druck in eine Datei gelöst, die immer überschrieben wurde.
 
@@ -29,15 +29,15 @@ Funktioniert einwandfrei und vor allem auf Anhieb. DANKE!
 
 [Permalink](http://znil.net/index.php?title=Dummy_Drucker_/_Nirwana_Drucker_/_NUL_oder_NULL_Drucker_anlegen_/_einrichten#comment-286) | [Antworten](http://znil.net/index.php?title=Dummy_Drucker_/_Nirwana_Drucker_/_NUL_oder_NULL_Drucker_anlegen_/_einrichten#end)
 
-[BLinz](http://znil.net/index.php?title=Benutzer:BLinz)
+**[BLinz](http://znil.net/index.php?title=Benutzer:BLinz)**
 
 147 Tage zuvor
-Punkte 0![http://znil.net/index.php?title=Spezial:Anmelden&returnto=Dummy_Drucker_%2F_Nirwana_Drucker_%2F_NUL_oder_NULL_Drucker_anlegen_%2F_einrichten\|19x18](../_filesFromEN/thumbs-up.gif)![http://znil.net/index.php?title=Spezial:Anmelden&returnto=Dummy_Drucker_%2F_Nirwana_Drucker_%2F_NUL_oder_NULL_Drucker_anlegen_%2F_einrichten\|19x18](../_filesFromEN/thumbs-down.gif)
+**Punkte 0![http://znil.net/index.php?title=Spezial:Anmelden&returnto=Dummy_Drucker_%2F_Nirwana_Drucker_%2F_NUL_oder_NULL_Drucker_anlegen_%2F_einrichten\|19x18](../_filesFromEN/thumbs-up.gif)![http://znil.net/index.php?title=Spezial:Anmelden&returnto=Dummy_Drucker_%2F_Nirwana_Drucker_%2F_NUL_oder_NULL_Drucker_anlegen_%2F_einrichten\|19x18](../_filesFromEN/thumbs-down.gif)**
 
 Immer gerne :-)
 [Permalink](http://znil.net/index.php?title=Dummy_Drucker_/_Nirwana_Drucker_/_NUL_oder_NULL_Drucker_anlegen_/_einrichten#comment-287)
 
-Kommentar hinzufügen:
+**Kommentar hinzufügen:**
 
 Gebe hier einen Kommentar ein. Du kannst einen beliebigen Namen oder eine Email-Adresse als Namen angeben.
 

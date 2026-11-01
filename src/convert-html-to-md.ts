@@ -176,6 +176,74 @@ const wrapCssDecorations = (node: HTMLElement) => {
     return node;
 };
 
+// Bold and italic written in CSS on anything but a <span> (`<div style="font-style:italic">` as an
+// image caption, a bold <td>, <p> or <cite>) were dropped: only <b>/<i> and styled <span>s are
+// converted. Wrap each run of inline content in a real <strong> or <em>, line by line, and let
+// the styling reach child blocks. Not links or code, not a heading or <th> (bold already), and
+// not content set back to normal weight or style.
+const CSS_EMPHASIS: Array<[string, RegExp, RegExp, string]> = [
+    ['strong', /font-weight\s*:\s*(bold|bolder|[6-9]00)\b/i, /font-weight\s*:\s*(normal|lighter|[1-5]00)\b/i, 'b, strong'],
+    ['em', /font-style\s*:\s*(italic|oblique)\b/i, /font-style\s*:\s*normal\b/i, 'i, em'],
+];
+const BLOCK_ELEMENTS = new Set(['ADDRESS', 'ARTICLE', 'ASIDE', 'BLOCKQUOTE', 'CENTER', 'DD', 'DIV', 'DL', 'DT',
+    'FIGCAPTION', 'FIGURE', 'FOOTER', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEADER', 'HR', 'LI', 'NAV', 'OL', 'P',
+    'PRE', 'SECTION', 'TABLE', 'TBODY', 'TD', 'TFOOT', 'TH', 'THEAD', 'TR', 'UL', 'EN-NOTE']);
+const EMPHASIS_SKIPPED = new Set(['A', 'SPAN', 'B', 'STRONG', 'I', 'EM', 'PRE', 'CODE', 'BR']);
+const wrapCssEmphasis = (node: HTMLElement) => {
+    for (const [tag, on, off, sameMarks] of CSS_EMPHASIS) {
+        const done = new Set<Node>();
+        const skips = (element: HTMLElement): boolean => done.has(element)
+            || off.test(element.getAttribute('style') || '')
+            || element.tagName === 'PRE' || element.tagName === 'CODE'
+            || (tag === 'strong' && /^(H[1-6]|TH)$/.test(element.tagName));
+        const emphasizeRuns = (element: HTMLElement) => {
+            done.add(element);
+            let run: Array<Node> = [];
+            const flush = () => {
+                if (run.some(child => child.textContent.trim())) {
+                    const wrapper = node.ownerDocument.createElement(tag);
+                    run[0].parentNode.insertBefore(wrapper, run[0]);
+                    wrapper.append(...run);
+                    // the same mark inside would close the new one early: `**a **b** c**`
+                    for (const inner of Array.from(wrapper.querySelectorAll(sameMarks))) {
+                        inner.replaceWith(...Array.from(inner.childNodes));
+                    }
+                    for (const inner of Array.from(wrapper.querySelectorAll('span[style]'))) {
+                        inner.setAttribute('style', inner.getAttribute('style').replace(new RegExp(on.source + '[^;]*;?', 'ig'), ''));
+                    }
+                }
+                run = [];
+            };
+            for (const child of Array.from(element.childNodes) as Array<HTMLElement>) {
+                if (child.nodeType !== 1) {
+                    run.push(child);
+                } else if (child.tagName === 'BR') {
+                    flush();
+                } else if (BLOCK_ELEMENTS.has(child.tagName) || child.querySelector(Array.from(BLOCK_ELEMENTS).join(','))) {
+                    flush();
+                    if (!skips(child)) {
+                        emphasizeRuns(child);
+                    }
+                } else if (off.test(child.getAttribute('style') || '') || child.tagName === 'CODE') {
+                    flush();
+                } else {
+                    run.push(child);
+                }
+            }
+            flush();
+        };
+        for (const element of Array.from(node.querySelectorAll('[style]')) as Array<HTMLElement>) {
+            if (EMPHASIS_SKIPPED.has(element.tagName) || !on.test(element.getAttribute('style') || '') || skips(element)
+                || element.closest(`a, pre, code, ${sameMarks}`) || !element.textContent.trim()) {
+                continue;
+            }
+            emphasizeRuns(element);
+        }
+    }
+
+    return node;
+};
+
 export const convertHtml2MdContent = (yarleOptions: YarleOptions, htmlContent: string): string => {
 
     // Close every self-closing <a …/>: an HTML parser reads it as an opening tag, so a link left
@@ -187,7 +255,7 @@ export const convertHtml2MdContent = (yarleOptions: YarleOptions, htmlContent: s
       .getElementsByTagName('en-note').item(0) as any as HTMLElement;
 
     let contentInMd = getTurndownService(yarleOptions)
-        .turndown(fixTasks(wrapCssDecorations(moveEdgeWhitespaceOutOfInlines(moveCaptionsOutOfTables(fixSublists(contentNode))))));
+        .turndown(fixTasks(wrapCssDecorations(moveEdgeWhitespaceOutOfInlines(wrapCssEmphasis(moveCaptionsOutOfTables(fixSublists(contentNode)))))));
 
     const newLinePlaceholder = new RegExp('<YARLE_NEWLINE_PLACEHOLDER>', 'g');
     contentInMd = contentInMd.replace(newLinePlaceholder, yarleOptions.convertPlainHtmlNewlines ? '\n': '');

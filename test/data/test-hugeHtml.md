@@ -50,7 +50,7 @@
 * [travel](http://www.theguardian.com/travel)
 [all sections](http://www.theguardian.com/world/2015/jul/27/dying-for-christianity-millions-at-risk-amid-rise-in-persecution-across-the-globe#nav-allsections)
 
-[Christianity](http://www.theguardian.com/world/christianity)
+**[Christianity](http://www.theguardian.com/world/christianity)**
 
 Dying for Christianity: millions at risk amid rise in persecution across the globe
 ==================================================================================
@@ -61,7 +61,7 @@ Increase in murder, as well as rape, torture and discrimination, has led the pop
 ![[./_resources/Untitled_Note.resources/unknown_filename.png]]
 Christians are scanned with a metal detector outside the Our Lady of Consolation church, in Garissa, Kenya which was attacked with grenades by militants. Photograph: Ben Curtis/AP
 
-[Harriet Sherwood](http://www.theguardian.com/profile/harrietsherwood)
+**[Harriet Sherwood](http://www.theguardian.com/profile/harrietsherwood)**
 
 <http://twitter.com/harrietsherwood>
 @harrietsherwood
@@ -314,7 +314,7 @@ Report
 * [World](http://www.theguardian.com/world)
 * › [Christianity](http://www.theguardian.com/world/christianity)
 
-* [membership](https://membership.theguardian.com/?INTCMP=NGW_FOOTER_UK_GU_MEMBERSHIP)
+* **[membership](https://membership.theguardian.com/?INTCMP=NGW_FOOTER_UK_GU_MEMBERSHIP)**
 
 * [jobs](http://jobs.theguardian.com/?INTCMP=NGW_FOOTER_UK_GU_JOBS)
 * [dating](https://soulmates.theguardian.com/?INTCMP=NGW_FOOTER_UK_GU_SOULMATES)

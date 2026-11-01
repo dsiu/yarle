@@ -2366,6 +2366,31 @@ dateFormat: undefined,
     assert.ok(!/```\n\s*\n```/.test(md), `empty fence:\n${md}`);
   });
 
+  it('keeps bold and italic set by CSS on blocks and other elements', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-css-emphasis.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-css-emphasis/css emphasis.md`, 'utf8');
+
+    // only <b>/<i> and styled <span>s were converted; the same styling on a <div>, <p>, <td>… was dropped
+    assert.ok(md.includes('_Dry mixing colored pencils_'), `italic caption lost:\n${md}`);
+    assert.ok(md.includes('**Bold line one**') && md.includes('**Bold line two**'), `bold lines lost:\n${md}`);
+    assert.ok(md.includes('**a bold nested paragraph with** a normal part **inside**'), `bold paragraph wrong:\n${md}`);
+    assert.ok(md.includes('**inner block**'), `bold inherited by a child block lost:\n${md}`);
+    assert.ok(md.includes('| **cell** | plain |'), `bold cell lost:\n${md}`);
+    assert.ok(md.includes('**Author** says'), `bold cite lost:\n${md}`);
+    assert.ok(md.includes('**[a link](http://example.com)**'), `bold around a link lost:\n${md}`);
+    // a heading is bold already, and normal weight is not bold
+    assert.ok(md.includes('### Heading\n'), `heading changed:\n${md}`);
+    assert.ok(md.includes('\nnot bold\n'), `normal weight changed:\n${md}`);
+    // an icon-font glyph (private use) counts as punctuation in pandoc: `****Reply` stays literal
+    assert.ok(md.includes('[<strong>\uf112</strong>Reply](http://example.com/reply)'), `icon glyph bold:\n${md}`);
+    assert.ok(!md.includes('****'), `bolds collide across an empty element:\n${md}`);
+  });
+
   it('keeps underline and strikethrough set by CSS, <ins>, and <sup>/<sub>', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-decorations.enex` ],
