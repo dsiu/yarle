@@ -44,8 +44,12 @@ const fixSublists = (node: HTMLElement) => {
     const listElements = ulElements.concat(olElements);
 
     listElements.forEach(listNode => {
-        if (listNode.parentElement.tagName === 'LI') {
-            listNode.parentElement.replaceWith(listNode);
+        // Unwrap Evernote's empty wrapper item (<li><ul>…</ul></li>) only. An item with its own
+        // text (<li><div>text</div><ul>…</ul></li>) keeps it: replacing it dropped that text.
+        const parentItem = listNode.parentElement;
+        if (parentItem.tagName === 'LI' && Array.from(parentItem.childNodes)
+            .every(child => child === listNode || (child.textContent || '').trim() === '')) {
+            parentItem.replaceWith(listNode);
         }
         if (
             listNode.previousElementSibling &&

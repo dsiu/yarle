@@ -2196,6 +2196,26 @@ dateFormat: undefined,
       'html link to the data-url image is broken');
   });
 
+  it('a list item keeps its own text when a nested list follows it', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-sublist-parent-text.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-sublist-parent-text/sublist parent text.md`, 'utf8');
+
+    // fixSublists replaced the whole parent <li> with its nested list, dropping the item's text
+    for (const text of ['Goal in a div', 'Status in a p', 'second paragraph']) {
+      assert.ok(md.includes(text), `parent item text lost: ${text}`);
+    }
+    for (const text of ['hiring, hiring, hiring', 'SERVER', 'Hiring', 'only child of an empty wrapper']) {
+      assert.ok(md.includes(text), `nested item text lost: ${text}`);
+    }
+    // the child stays nested under its parent
+    assert.ok(/Goal in a div\n\t+\* hiring, hiring, hiring/.test(md), `child not nested under parent:\n${md}`);
+  });
+
   it('really long filename', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-long-note.enex` ],

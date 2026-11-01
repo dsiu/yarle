@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export3.dtd">
+<en-export export-date="20261101T000000Z" application="Evernote" version="Evernote Mac 7.5 (457109)">
+<note><title>sublist parent text</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd"><en-note><ul><li><div>Goal in a div</div><ul><li><div>hiring, hiring, hiring</div></li></ul></li></ul><ul><li><p>Status in a p</p><p>second paragraph</p><ol><li><span>SERVER</span></li><li><span>Hiring</span></li></ol></li></ul><ul><li><ul><li>only child of an empty wrapper</li></ul></li></ul></en-note>]]></content><created>20060824T075100Z</created><updated>20060824T075100Z</updated><note-attributes></note-attributes></note>
+</en-export>
