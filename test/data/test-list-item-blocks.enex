@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export3.dtd">
+<en-export export-date="20261102T000000Z" application="Evernote" version="Evernote Mac 7.5 (457109)">
+<note><title>list items with blocks</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd"><en-note><ol><li><p><strong>2.2. Formatting.</strong> Full artist names.</p></li><li><p><strong>2.3. Composers.</strong> Track level only.</p><table><tr><td>Correct</td><td>Incorrect</td></tr><tr><td>Slash</td><td>Slash (Of GNR)</td></tr></table></li></ol><ul><li><p>ONE</p><p>TWO</p></li><li>plain item</li></ul></en-note>]]></content><created>20150304T000000Z</created><updated>20150304T000000Z</updated><note-attributes></note-attributes></note>
+</en-export>

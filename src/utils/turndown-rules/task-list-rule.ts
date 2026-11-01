@@ -22,7 +22,15 @@ export const taskListRule = {
             return nodeProxy.style && nodeProxy.style.value.indexOf(taskFlag) >= 0;
         };
 
-        const indentCount  = content.match(/^\n*/)[0].length || 0;
+        // Leading newlines are read as a nesting depth, which drops the bullet. That is meant for an
+        // item that only wraps a nested list; an item opening with a <p> or another block also
+        // starts with newlines, lost its bullet, and its tab-indented content became a code block.
+        const children = Array.from(node.childNodes) as Array<any>;
+        const firstElementIndex = children.findIndex(child => child.nodeType === 1);
+        const opensWithNestedList = firstElementIndex >= 0
+            && ['UL', 'OL'].includes(children[firstElementIndex].nodeName)
+            && children.slice(0, firstElementIndex).every(child => (child.textContent || '').trim() === '');
+        const indentCount  = opensWithNestedList ? (content.match(/^\n*/)[0].length || 0) : 0;
         const indentChars = indentCharacter.repeat(indentCount);
 
         const todoPrefix = yarleOptions.outputFormat === OutputFormat.LogSeqMD ? '' :

@@ -2257,6 +2257,81 @@ dateFormat: undefined,
     assert.ok(md.includes('run `ls -la` now'), `single-line inline code changed:\n${md}`);
   });
 
+  it('a list item starting with a block keeps its bullet and its content out of a code block', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-list-item-blocks.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-list-item-blocks/list items with blocks.md`, 'utf8');
+
+    // the leading blank lines of a <p> were read as an indent depth: no bullet, tab-indented content
+    assert.ok(/^1\. \*\*2\.2\. Formatting\.\*\* Full artist names\./m.test(md), `first item lost its number:\n${md}`);
+    assert.ok(/^2\. \*\*2\.3\. Composers\.\*\* Track level only\./m.test(md), `second item lost its number:\n${md}`);
+    assert.ok(/^\* ONE$/m.test(md), `bullet lost:\n${md}`);
+    assert.ok(/^\* plain item$/m.test(md), `plain item changed:\n${md}`);
+    // nothing indented deeper than one level of item content (that renders as a code block)
+    assert.ok(!/^\t\t/m.test(md), `content indented into a code block:\n${md}`);
+  });
+
+  it('a <pre> keeps all its text and its line breaks in a fenced block', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-preformatted.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-preformatted/preformatted blocks.md`, 'utf8');
+
+    // turndown's code block read only the <pre>'s first child: `$ ` without the command
+    assert.ok(md.includes('```\n$ sudo port install git\n```'), `<pre> text lost:\n${md}`);
+    // a <pre> without <code> was plain text, its line breaks gone
+    assert.ok(md.includes('```\nCommand output line one\nline two\nline three\n```'), `<pre> line breaks lost:\n${md}`);
+    assert.ok(md.includes('```\nsingle code child\n```'), `simple <pre><code> changed:\n${md}`);
+  });
+
+  it('marks a highlight only for real colour, not black, grey or a font marker', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-colour-highlight.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+      convertColorsToMDHighlight: true,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-colour-highlight/colour highlight.md`, 'utf8');
+
+    // any colour at all, the page's own near-black text included, became ==highlight==
+    for (const plain of ['near black body text', 'grey caption', 'evernote font marker', 'white background']) {
+      assert.ok(md.includes(plain) && !md.includes(`==${plain}==`), `not a highlight: ${plain}\n${md}`);
+    }
+    for (const marked of ['red warning', 'yellow background', 'evernote highlight']) {
+      assert.ok(md.includes(`==${marked}==`), `highlight lost: ${marked}\n${md}`);
+    }
+    // a coloured span inside a highlight was wrapped twice: `====…====`
+    assert.ok(md.includes('==red inside a highlight==') && !md.includes('===='), `highlight nested:\n${md}`);
+  });
+
+  it('bold and italic that Markdown cannot open or close fall back to HTML', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-emphasis-flanking.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-emphasis-flanking/emphasis flanking.md`, 'utf8');
+
+    // `**…changed?**The` does not close: punctuation before the delimiter, a letter after it
+    assert.ok(md.includes('<strong>Interview: How has the company changed?</strong>The first thing'), `bold not closed:\n${md}`);
+    // `是**「書」**字` does not open: a letter before, punctuation after
+    assert.ok(md.includes('是<strong>「書」</strong>字'), `CJK bold not opened:\n${md}`);
+    // `_` never works inside a word, and CJK text has no spaces
+    assert.ok(md.includes('香草<em>花草</em>也'), `CJK italic not rendered:\n${md}`);
+    // where Markdown works, it stays Markdown
+    assert.ok(md.includes('a **plain bold** b and _plain italic_ c'), `plain emphasis changed:\n${md}`);
+    assert.ok(md.includes('「**書**」'), `bold between punctuation changed:\n${md}`);
+  });
+
   it('really long filename', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-long-note.enex` ],

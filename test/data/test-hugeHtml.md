@@ -83,7 +83,7 @@ Last modified on Monday 27 July 2015 15.47 BST
 
 [741](http://www.theguardian.com/world/2015/jul/27/dying-for-christianity-millions-at-risk-amid-rise-in-persecution-across-the-globe#comments)
 
-Save for later
+**Save for later**
 
 Christians are facing growing persecution around the world, fuelled mainly by Islamic extremism and repressive governments, leading the pope to warn of “a form of genocide” and for campaigners to speak of “religio-ethnic cleansing”.
 
@@ -213,7 +213,7 @@ Topics
 * [Pope Francis](http://www.theguardian.com/world/pope-francis)
 * [Egypt](http://www.theguardian.com/world/egypt)
 * [Syria](http://www.theguardian.com/world/syria)
-* More…
+* **More…**
 
 * [Share on Facebook](https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fgu.com%2Fp%2F4azh6%2Fsfb&ref=responsive)
 
@@ -222,7 +222,7 @@ Topics
 * [Share on Pinterest](http://www.pinterest.com/pin/find/?url=http%3A%2F%2Fwww.theguardian.com%2Fworld%2F2015%2Fjul%2F27%2Fdying-for-christianity-millions-at-risk-amid-rise-in-persecution-across-the-globe)
 * [Share on LinkedIn](http://www.linkedin.com/shareArticle?mini=true&title=Dying+for+Christianity%3A+millions+at+risk+amid+rise+in+persecution+across+the+globe&url=http%3A%2F%2Fgu.com%2Fp%2F4azh6)
 * [Share on Google+](https://plus.google.com/share?url=http%3A%2F%2Fgu.com%2Fp%2F4azh6%2Fsgp&amp;hl=en-GB&amp;wwc=1)
-Save for later
+**Save for later**
 
 ### Most popular
 
@@ -257,25 +257,25 @@ comments (741)
 --------------
 
 ![[./_resources/Untitled_Note.resources/unknown_filename.10.png]]
-Signed in as AndrewBrown
+Signed in as **AndrewBrown**
 
-Post your comment
+**Post your comment**
 
-Order by oldest
-Show 25
-Threads collapsed
+Order by **oldest**
+Show **25**
+Threads **collapsed**
 
-1 [2](http://www.theguardian.com/discussion/p/4azh6?page=2) [3](http://www.theguardian.com/discussion/p/4azh6?page=3) [4](http://www.theguardian.com/discussion/p/4azh6?page=4)… [8](http://www.theguardian.com/discussion/p/4azh6?page=8) [next](http://www.theguardian.com/discussion/p/4azh6?page=2)
+**1** [2](http://www.theguardian.com/discussion/p/4azh6?page=2) [3](http://www.theguardian.com/discussion/p/4azh6?page=3) [4](http://www.theguardian.com/discussion/p/4azh6?page=4)… [8](http://www.theguardian.com/discussion/p/4azh6?page=8) [next](http://www.theguardian.com/discussion/p/4azh6?page=2)
 
-	![[./_resources/Untitled_Note.resources/unknown_filename.5.png]]
-	[Lillianne](https://profile.theguardian.com/user/id/14670089)
+* ![[./_resources/Untitled_Note.resources/unknown_filename.5.png]]
+	**[Lillianne](https://profile.theguardian.com/user/id/14670089)**
 	<http://discussion.theguardian.com/comment-permalink/56464029>
 	3h ago
 	
 	                            This comment was removed by a moderator because it didn't abide by our                             [community standards](http://www.theguardian.com/community-standards).                             Replies may also be deleted. For more detail see [our FAQs](http://www.theguardian.com/community-faqs).
 	
-	![[./_resources/Untitled_Note.resources/unknown_filename.5.png]]
-	[nevermindlastnight](https://profile.theguardian.com/user/id/14881964)
+* ![[./_resources/Untitled_Note.resources/unknown_filename.5.png]]
+	**[nevermindlastnight](https://profile.theguardian.com/user/id/14881964)**
 	<http://discussion.theguardian.com/comment-permalink/56464149>
 	3h ago
 	
@@ -287,7 +287,7 @@ Reason (optional)
 Email (optional)
 Report
 
-View more comments
+**View more comments**
 
 [popular](http://www.theguardian.com/most-read/world)
 -----------------------------------------------------

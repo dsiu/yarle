@@ -40,7 +40,7 @@ _Figure 12 — monolith latency_
 
 In this case, the workflow must interact with the same four services/domains, but the cost to communicate with each component is much less (i.e. the short red bars).
 
-> _Note — Tactics to Reduce Latency Woes_
+> _**Note — Tactics to Reduce Latency Woes**_
 > _There’s a few tactics that can mitigate these latency issues, but no real definitive solution. You can:_
 > _1\. Attempt to bring dependents closer together in the network, thus reducing latency._
 > _2\. Use an orchestration mechanism that sends messages to each, and compiles a response as they become available (assuming you can do this)._
