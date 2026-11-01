@@ -88,6 +88,50 @@ const fixSublists = (node: HTMLElement) => {
     return node;
 };
 
+// turndown 7.0.0 trims an inline element's edge whitespace with String.trim(), which also removes
+// full-width spaces (U+3000, used to indent CJK text) and puts back at most one ASCII space. Move
+// edge full-width spaces out of the element first, as plain text, which turndown leaves alone.
+// Only those: a non-breaking space kept the same way can land at the start of a line and stop a
+// table or image there from rendering (as turndown 7.2.4 does). Bold and italic edges are handled
+// in their rules (bold-rule.ts).
+const INLINE_MARKS = 'a, b, strong, i, em, u, s, strike, del, ins, span, font, mark, small, big, sub, sup, cite, q';
+const FULL_WIDTH_SPACE = /　/;
+
+const edgeText = (node: Node, first: boolean): Text | undefined => {
+    let n: Node = node;
+    while (n && n.nodeType === 1) {
+        n = first ? n.firstChild : n.lastChild;
+    }
+
+    return n && n.nodeType === 3 ? n as Text : undefined;
+};
+
+const moveEdgeWhitespaceOutOfInlines = (node: HTMLElement) => {
+    // innermost first, so whitespace moved out of a <b> can move on out of its <span>
+    const marks = Array.from(node.querySelectorAll(INLINE_MARKS)).reverse();
+    for (const mark of marks) {
+        if (mark.closest('pre, code')) {
+            continue;
+        }
+        // Only whitespace that shares its text node with text: a whitespace-only edge sits next to
+        // a <br> or an image, and moving it out would leave the mark opening on a line break.
+        const first = edgeText(mark, true);
+        const leading = first?.data.match(/^\s+/);
+        if (leading && leading[0].length < first.data.length && FULL_WIDTH_SPACE.test(leading[0])) {
+            first.data = first.data.slice(leading[0].length);
+            mark.before(leading[0]);
+        }
+        const last = edgeText(mark, false);
+        const trailing = last?.data.match(/\s+$/);
+        if (trailing && trailing[0].length < last.data.length && FULL_WIDTH_SPACE.test(trailing[0])) {
+            last.data = last.data.slice(0, last.data.length - trailing[0].length);
+            mark.after(trailing[0]);
+        }
+    }
+
+    return node;
+};
+
 export const convertHtml2MdContent = (yarleOptions: YarleOptions, htmlContent: string): string => {
 
     // Close every self-closing <a …/>: an HTML parser reads it as an opening tag, so a link left
@@ -99,7 +143,7 @@ export const convertHtml2MdContent = (yarleOptions: YarleOptions, htmlContent: s
       .getElementsByTagName('en-note').item(0) as any as HTMLElement;
 
     let contentInMd = getTurndownService(yarleOptions)
-        .turndown(fixTasks(fixSublists(contentNode)));
+        .turndown(fixTasks(moveEdgeWhitespaceOutOfInlines(fixSublists(contentNode))));
 
     const newLinePlaceholder = new RegExp('<YARLE_NEWLINE_PLACEHOLDER>', 'g');
     contentInMd = contentInMd.replace(newLinePlaceholder, yarleOptions.convertPlainHtmlNewlines ? '\n': '');

@@ -2238,6 +2238,25 @@ dateFormat: undefined,
     assert.ok(card.includes('Second teaser line.'), `content after the heading lost:\n${card}`);
   });
 
+  it('keeps non-ASCII edge whitespace out of inline marks, and fences inline code with line breaks', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-edge-whitespace-inline-code.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-edge-whitespace-inline-code/edge whitespace and inline code.md`, 'utf8');
+
+    // turndown trimmed the full-width spaces at the start of the <font> away
+    assert.ok(md.includes('\u3000\u3000。唐'), `full-width spaces lost:\n${md}`);
+    // the non-breaking space ended up inside the delimiters: `**  1 2**` does not render as bold
+    assert.ok(/\*\*1 2\*\*/.test(md), `bold not closed around its text:\n${md}`);
+    assert.ok(!/\*\*\s+1 2/.test(md), `bold opens with whitespace:\n${md}`);
+    // `# …` lines inside a multi-line code span render as headings
+    assert.ok(md.includes('```\n# ipkg update\n# ipkg upgrade\n# ipkg install git\n```'), `inline code with line breaks not fenced:\n${md}`);
+    assert.ok(md.includes('run `ls -la` now'), `single-line inline code changed:\n${md}`);
+  });
+
   it('really long filename', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-long-note.enex` ],

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export3.dtd">
+<en-export export-date="20261101T000000Z" application="Evernote" version="Evernote Mac 7.5 (457109)">
+<note><title>edge whitespace and inline code</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd"><en-note><div><font face="標楷體">　　。唐．李白．靜夜思</font></div><div>中文拼音文字 <b>&#160; 1 2</b> next</div><div>Code: Select all</div><div><code># ipkg update<br/># ipkg upgrade<br/># ipkg install git</code></div><div>run <code>ls -la</code> now</div></en-note>]]></content><created>20150304T000000Z</created><updated>20150304T000000Z</updated><note-attributes></note-attributes></note>
+</en-export>
