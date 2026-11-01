@@ -27,6 +27,26 @@ const adjacentChar = (node: any, before: boolean): string => {
   return ' ';
 };
 
+const SAME_MARK: { [tag: string]: Set<string> } = {
+  strong: new Set(['B', 'STRONG']), em: new Set(['I', 'EM']), del: new Set(['S', 'DEL', 'STRIKE']),
+};
+const SAME_MARK_STYLE: { [tag: string]: RegExp } = {
+  strong: /font-weight\s*:\s*(bold|bolder|[6-9]00)\b/i, em: /font-style\s*:\s*(italic|oblique)\b/i, del: /line-through/i,
+};
+// a styled <span> (OneNote, web clips) is the same mark as the element
+const isSameMark = (element: any, tag: string): boolean => !!element && (SAME_MARK[tag]?.has(element.nodeName)
+  || (element.nodeName === 'SPAN' && SAME_MARK_STYLE[tag]?.test(element.getAttribute('style') || '')));
+
+// The element right before a node with no text between them (whitespace counts as text).
+const previousElementWithoutText = (node: any): any => {
+  let sibling = node.previousSibling;
+  while (sibling && sibling.nodeType === 3 && sibling.textContent === '') {
+    sibling = sibling.previousSibling;
+  }
+
+  return sibling && sibling.nodeType === 1 ? sibling : undefined;
+};
+
 // CommonMark opens `**` only if it is not followed by punctuation, or is preceded by whitespace or
 // punctuation; closing mirrors that. So `**…changed?**The` and `是**「書」**字` stay literal
 // asterisks. `_` also never opens or closes inside a word, and CJK text has no spaces between
@@ -41,7 +61,9 @@ export const emphasize = (content: string, node: any, delimiter: string, tag: st
   const after = trailing ? ' ' : adjacentChar(node, false);
   const first = inner[0];
   const last = inner[inner.length - 1];
-  const cannotOpen = PUNCTUATION.test(first) && !isSpaceOrPunctuation(before);
+  // `**a**` right after another `**b**` makes `**b****a**`: the delimiters touch and do not parse
+  const touchesSameMark = !leading && isSameMark(previousElementWithoutText(node), tag);
+  const cannotOpen = touchesSameMark || (PUNCTUATION.test(first) && !isSpaceOrPunctuation(before));
   const cannotClose = PUNCTUATION.test(last) && !isSpaceOrPunctuation(after);
   const intraword = delimiter.startsWith('_') && (!isSpaceOrPunctuation(before) || !isSpaceOrPunctuation(after));
 

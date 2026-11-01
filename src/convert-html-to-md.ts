@@ -132,6 +132,50 @@ const moveEdgeWhitespaceOutOfInlines = (node: HTMLElement) => {
     return node;
 };
 
+// The GFM table plugin has no rule for <caption>: its text landed on the delimiter row and broke
+// the table, and as the table's first child it hid a <thead> row from the header check. Make it a
+// paragraph above its table.
+const moveCaptionsOutOfTables = (node: HTMLElement) => {
+    for (const caption of Array.from(node.getElementsByTagName('caption'))) {
+        const table = caption.closest('table');
+        if (!table) {
+            continue;
+        }
+        const paragraph = node.ownerDocument.createElement('p');
+        paragraph.append(...Array.from(caption.childNodes));
+        table.before(paragraph);
+        caption.remove();
+    }
+
+    return node;
+};
+
+// Underline and strikethrough written in CSS (`<span style="text-decoration: underline">`,
+// a struck-through <p> or <td>) were dropped: only <u>, <s> and <del> are converted. Wrap such an
+// element's content in a real <u> or <s>. Not links, which are underlined anyway.
+const DECORATED_ALREADY = new Set(['A', 'U', 'INS', 'S', 'DEL', 'STRIKE']);
+const wrapCssDecorations = (node: HTMLElement) => {
+    for (const element of Array.from(node.querySelectorAll('[style]')) as Array<HTMLElement>) {
+        if (DECORATED_ALREADY.has(element.tagName) || !element.textContent.trim()) {
+            continue;
+        }
+        const style = (element.getAttribute('style') || '').toLowerCase();
+        const decoration = style.match(/text-decoration(?:-line)?\s*:\s*([^;]*)/);
+        if (!decoration) {
+            continue;
+        }
+        for (const [word, tag] of [['underline', 'u'], ['line-through', 's']]) {
+            if (decoration[1].includes(word)) {
+                const wrapper = node.ownerDocument.createElement(tag);
+                wrapper.append(...Array.from(element.childNodes));
+                element.append(wrapper);
+            }
+        }
+    }
+
+    return node;
+};
+
 export const convertHtml2MdContent = (yarleOptions: YarleOptions, htmlContent: string): string => {
 
     // Close every self-closing <a …/>: an HTML parser reads it as an opening tag, so a link left
@@ -143,7 +187,7 @@ export const convertHtml2MdContent = (yarleOptions: YarleOptions, htmlContent: s
       .getElementsByTagName('en-note').item(0) as any as HTMLElement;
 
     let contentInMd = getTurndownService(yarleOptions)
-        .turndown(fixTasks(moveEdgeWhitespaceOutOfInlines(fixSublists(contentNode))));
+        .turndown(fixTasks(wrapCssDecorations(moveEdgeWhitespaceOutOfInlines(moveCaptionsOutOfTables(fixSublists(contentNode))))));
 
     const newLinePlaceholder = new RegExp('<YARLE_NEWLINE_PLACEHOLDER>', 'g');
     contentInMd = contentInMd.replace(newLinePlaceholder, yarleOptions.convertPlainHtmlNewlines ? '\n': '');

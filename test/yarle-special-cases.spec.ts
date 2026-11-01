@@ -2330,6 +2330,42 @@ dateFormat: undefined,
     // where Markdown works, it stays Markdown
     assert.ok(md.includes('a **plain bold** b and _plain italic_ c'), `plain emphasis changed:\n${md}`);
     assert.ok(md.includes('「**書**」'), `bold between punctuation changed:\n${md}`);
+    // two bold elements side by side made `**小明****A:**`, which no reader parses
+    assert.ok(md.includes('**小明**<strong>A:</strong> next'), `adjacent bolds collide:\n${md}`);
+    assert.ok(md.includes('**小明**<strong>B:</strong> next'), `adjacent bold spans collide:\n${md}`);
+  });
+
+  it('a table caption becomes a paragraph above the table', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-table-caption.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-table-caption/table caption.md`, 'utf8');
+
+    // the GFM plugin has no caption rule: the caption landed on the delimiter row and broke the table
+    assert.ok(md.includes('付款方式\n\n| 信用卡類型 | 信用卡卡號 |\n| --- | --- |\n| VISA | …1234 |'), `caption breaks the table:\n${md}`);
+  });
+
+  it('keeps underline and strikethrough set by CSS, <ins>, and <sup>/<sub>', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-decorations.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-decorations/decorations.md`, 'utf8');
+
+    // only <u> and <s>/<del> were converted; the same styling written in CSS was dropped
+    assert.ok(md.includes('a <u>css underline</u> b'), `CSS underline lost:\n${md}`);
+    assert.ok(md.includes('c ~~css strike~~ d'), `CSS strikethrough lost:\n${md}`);
+    assert.ok(md.includes('~~whole struck paragraph~~'), `struck paragraph lost:\n${md}`);
+    assert.ok(md.includes('e <u>inserted</u> f'), `<ins> lost:\n${md}`);
+    assert.ok(md.includes('H<sub>2</sub>O and x<sup>2</sup>'), `sub/sup lost:\n${md}`);
+    // a link is underlined anyway, and a plain <s> is unchanged
+    assert.ok(md.includes('g [a link](http://example.com) h'), `link changed:\n${md}`);
+    assert.ok(md.includes('i ~~plain strike~~ j'), `<s> changed:\n${md}`);
   });
 
   it('really long filename', async () => {

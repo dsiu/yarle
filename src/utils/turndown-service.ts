@@ -20,6 +20,7 @@ import { encryptRule } from './turndown-rules/encrypt-rule';
 import { inlineCodeWithBreaksRule } from './turndown-rules/inline-code-with-breaks-rule';
 import { boldRule } from './turndown-rules/bold-rule';
 import { preformattedRule } from './turndown-rules/preformatted-rule';
+import { supSubRule } from './turndown-rules/sup-sub-rule';
 
 export const getTurndownService = (yarleOptions: YarleOptions) => {
     /* istanbul ignore next */
@@ -49,6 +50,7 @@ export const getTurndownService = (yarleOptions: YarleOptions) => {
     turndownService.addRule('encrypt', encryptRule);
     turndownService.addRule('inline code with breaks', inlineCodeWithBreaksRule);
     turndownService.addRule('preformatted', preformattedRule);
+    turndownService.addRule('sup and sub', supSubRule);
     if (yarleOptions.outputFormat === OutputFormat.LogSeqMD) {
         turndownService.addRule('logseq_hr', {
                 filter: ['hr'],
