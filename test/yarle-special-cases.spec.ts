@@ -2594,6 +2594,23 @@ dateFormat: undefined,
     assert.ok(md.includes('\n<http://example.com/alone>\n'), `lone empty link:\n${md}`);
   });
 
+  it('a note link is resolved in the link only, not in the text that quotes its address', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-link-in-code.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await dropTheRopeRunner.run(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-link-in-code/link in code.md`, 'utf8');
+    const guid = '0a1b2c3d-1111-4222-8333-444455556666';
+
+    // applyLinks replaced the link id everywhere in the file: the pasted Markdown source in the
+    // code block became `evernote:///view/12345/s1/address map/`, its GUIDs lost
+    assert.ok(md.includes(`[address map](evernote:///view/12345/s1/${guid}/${guid}/)`), `code block:\n${md}`);
+    assert.ok(md.includes(`id as text: ${guid}/${guid} end`), `plain text:\n${md}`);
+    assert.ok(md.includes('see [address map](address map) here'), `the link itself:\n${md}`);
+  });
+
   it('monospace text right in the note joins the code block', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-loose-monospace.enex` ],

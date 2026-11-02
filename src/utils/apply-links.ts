@@ -85,8 +85,11 @@ export const applyLinks = (options: YarleOptions, outputNotebookFolders: Array<s
 
                 }
                 else {
-                    const regexp = new RegExp(escapeStringRegexp(linkName), 'g');
-                    updatedContent = updatedContent.replace(regexp, () => realFileNameInContent);
+                    // Only where the id is a link destination (`](id`, `](<id`, `[[id`): the same
+                    // text elsewhere, e.g. a note's own Markdown source quoting its
+                    // `evernote:///view/…/<guid>/<guid>/` links in a code block, is content.
+                    const regexp = new RegExp(`(\\]\\(<?|\\[\\[)${escapeStringRegexp(linkName)}`, 'g');
+                    updatedContent = updatedContent.replace(regexp, (_match, opening) => `${opening}${realFileNameInContent}`);
                 }
                 
                 if ((`${fileName}.md` === targetFile || targetFile === linkProps.title) &&
