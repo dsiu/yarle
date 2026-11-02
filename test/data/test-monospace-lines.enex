@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export3.dtd">
+<en-export export-date="20261102T000000Z" application="Evernote" version="Evernote Mac 7.5 (457109)">
+<note><title>monospace lines</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd"><en-note><div>one</div><div><font face="'Andale Mono'"><span style="font-size: 12px;"># DESCRIPTION: a_b [x] *y*</span></font></div><div><font face="'Andale Mono'"><span style="font-size: 12px;">set $SHOW_CONTEXT = 1 # 1_2</span></font></div><div>two</div><div><font face="Andale Mono"><span style="font-size: 9px;">Oct  9 16:42:38 <a href="http://host.local">host.local</a> Installer[24178]: Env: SHELL=/opt/local/bin/bash</span></font></div><div><font face="Andale Mono"><span style="font-size: 9px;">Oct  9 16:42:39 <a href="http://host.local">host.local</a> Installer[24178]: User_picked</span></font></div><div>three</div><div><hr/><font face="Andale Mono"><br/></font></div><div><font face="Andale Mono"><img src="x.png"/><br/></font></div><div><font face="Andale Mono">mono start </font>then plain prose</div><div>four</div><div style="font-family: Monaco, monospace;"><code>Example.app<br/>x64 : 55 4889e5</code></div><div>five</div><table><tr><td><div><span style="font-family: Menlo, monospace;">;; layout table line</span></div></td></tr></table><div>six</div>
+<div><font face="Andale Mono">replace:</font></div>
+<div><span style="font-family: 'Andale Mono';">E927 </span><font face="Andale Mono">55 4889E5</font></div>
+<div>seven</div>
+<div><font face="Andale Mono"><br/></font></div>
+<div><font face="Andale Mono"><br/></font></div>
+<div><font face="Andale Mono">a = 1</font></div>
+<div><font face="Andale Mono"><br/></font></div>
+<div><font face="Andale Mono">b = 2</font></div>
+<div><font face="Andale Mono"><br/></font></div>
+<div>eight</div>
+<div><font face="Andale Mono">pop <b>r14</b> <span style="-evernote-highlight:true;">rbp</span> <u>u</u> x<sup>2</sup></font></div>
+<div>nine</div><table><tr><td><div style="font-family: Monaco, monospace;">1</div></td><td><div style="font-family: Monaco, monospace;">sudo port -f uninstall</div></td></tr></table></en-note>]]></content><created>20131018T043906Z</created><updated>20131018T043906Z</updated><note-attributes></note-attributes></note>
+</en-export>

@@ -1,5 +1,6 @@
 
 import { yarleOptions } from '../../yarle';
+import { isInMonospaceCodeBlock } from './replace-monospace-code-block';
 import { OutputFormat } from '../../output-format';
 
 import { filterByNodeName } from './filter-by-nodename';
@@ -52,6 +53,10 @@ export const spanRule = {
 
         //const HIGHLIGHT_SEPARATOR = yarleOptions.outputFormat === OutputFormat.ObsidianMD ? '==' : '`' ;
         const nodeProxy = getAttributeProxy(node);
+        // a code block shows `==` as typed
+        if (isInMonospaceCodeBlock(node)) {
+            return content;
+        }
         if (nodeProxy.style && content.trim() !== '') {
             const nodeValue: string = nodeProxy.style.value;
             const languageItems = getLanguageItems(yarleOptions.outputFormat)

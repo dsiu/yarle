@@ -52,7 +52,6 @@ Kommentar:
 [Kategorien](http://znil.net/index.php?title=Spezial:Kategorien):
 
 * [Windows](http://znil.net/index.php?title=Kategorie:Windows&action=edit&redlink=1)
-
 * [Windows 7](http://znil.net/index.php?title=Kategorie:Windows_7&action=edit&redlink=1)
 * [Windows Server 2000](http://znil.net/index.php?title=Kategorie:Windows_Server_2000&action=edit&redlink=1)
 * [Windows Server 2003](http://znil.net/index.php?title=Kategorie:Windows_Server_2003&action=edit&redlink=1)

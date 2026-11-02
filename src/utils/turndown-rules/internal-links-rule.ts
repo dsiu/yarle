@@ -13,6 +13,7 @@ import { isTOC } from './../../utils/is-toc';
 import { isHeptaOrObsidianOutput } from './../../utils/is-hepta-or-obsidian-output';
 import { mdLinkTarget } from './../md-link-target';
 import { isStandardMdFamily } from './../is-standard-md-family';
+import { isInMonospaceCodeBlock } from './replace-monospace-code-block';
 import sanitize from 'sanitize-filename';
 
 export const removeBrackets = (str: string): string => {
@@ -50,8 +51,19 @@ const getEvernoteUniqueId = (value: string): string => {
         ? [urlSpl[0],urlSpl[1]]
         : [urlSpl[1],urlSpl[2]]).join('/')
 }
+// In a code block a link shows as typed. When its text is its own address (an autolinked host or
+// URL in a pasted log), the text alone loses nothing; any other link keeps its markdown.
+const sameAddress = (text: string, href: string): boolean => {
+    const bare = (s: string) => s.trim().replace(/^[a-z]+:\/\//i, '').replace(/\/$/, '').toLowerCase();
+
+    return bare(text) === bare(href);
+};
+
 const linkReplacement = (content: any, node: any): string => {
         const nodeProxy = getAttributeProxy(node);
+        if (nodeProxy.href && isInMonospaceCodeBlock(node) && sameAddress(node.textContent, nodeProxy.href.value)) {
+            return content;
+        }
         let internalTurndownedContent =
             getTurndownService(yarleOptions).turndown(removeBrackets(node.innerHTML));
         internalTurndownedContent = removeDoubleBackSlashes(internalTurndownedContent);

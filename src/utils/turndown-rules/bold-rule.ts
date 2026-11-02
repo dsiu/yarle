@@ -1,4 +1,6 @@
 import { getLanguageItems } from './../../outputLanguages/LanguageFactory';
+import { isInMonospaceCodeBlock } from './replace-monospace-code-block';
+import { isFlattenedTable } from './flattened-table';
 import { yarleOptions } from '../../yarle';
 
 // turndown trims a mark's content only when the mark is not already next to whitespace, so in
@@ -15,8 +17,6 @@ const isSpaceOrPunctuation = (char: string): boolean => /\s/.test(char) || PUNCT
 // cell after cell with nothing between, so its cell boundaries are not whitespace. Same test as
 // the plugin's tableShouldBeSkipped.
 const TABLE_PARTS = new Set(['TABLE', 'TBODY', 'THEAD', 'TFOOT', 'TR', 'TD', 'TH']);
-const isFlattenedTable = (table: any): boolean => !table || !table.rows
-  || (table.rows.length === 1 && table.rows[0].childNodes.length <= 1) || !!table.querySelector('table');
 const isBoundary = (node: any): boolean => BLOCKS.has(node.nodeName)
   && !(TABLE_PARTS.has(node.nodeName) && isFlattenedTable(node.nodeName === 'TABLE' ? node : node.closest('table')));
 
@@ -91,6 +91,10 @@ const endsInSameMark = (node: any, tag: string): boolean => {
 // asterisks. `_` also never opens or closes inside a word, and CJK text has no spaces between
 // words. Where the delimiter cannot work, write the HTML element, which every reader renders.
 export const emphasize = (content: string, node: any, delimiter: string, tag: string): string => {
+  // a code block shows marks as typed: `**`, `_` and `~~` would be literal characters there
+  if (isInMonospaceCodeBlock(node)) {
+    return content;
+  }
   const [, leading, inner, trailing] = content.match(/^(\s*)([\s\S]*?)(\s*)$/);
   // a heading is bold already; `# **Title**` only adds asterisks
   if (!inner || (tag === 'strong' && node.closest && node.closest('h1, h2, h3, h4, h5, h6'))) {

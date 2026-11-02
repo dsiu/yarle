@@ -2366,6 +2366,74 @@ dateFormat: undefined,
     assert.ok(!/```\n\s*\n```/.test(md), `empty fence:\n${md}`);
   });
 
+  it('fences monospace lines without escapes, also lines holding a link', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-monospace-lines.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+      monospaceIsCodeBlock: true,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-monospace-lines/monospace lines.md`, 'utf8');
+
+    // adjacent monospace lines merge into one fence; turndown's escapes (\# \_ \[) stayed in it
+    assert.ok(md.includes('```\n# DESCRIPTION: a_b [x] *y*\nset $SHOW_CONTEXT = 1 # 1_2\n```'), `escapes in a merged block:\n${md}`);
+    // a link in a monospace line made its font "mixed": the lines were left as escaped prose
+    assert.ok(md.includes('```\nOct  9 16:42:38 host.local Installer[24178]: Env: SHELL=/opt/local/bin/bash\nOct  9 16:42:39 host.local Installer[24178]: User_picked\n```'), `log lines with links:\n${md}`);
+    // a line only partly monospace stays prose
+    assert.ok(md.includes('mono start then plain prose'), `partly monospace line:\n${md}`);
+    assert.ok(!md.includes('```\nmono start'), `partly monospace line fenced:\n${md}`);
+    // a rule or an image in a monospace font is not code: it opened an empty fence
+    assert.ok(!/three\n+```/.test(md), `rule or image fenced:\n${md}`);
+    // <code> in a monospace block fences itself; the block around it opened empty fences
+    assert.ok(!/```\n\s*\n```/.test(md), `empty fence:\n${md}`);
+    assert.ok(md.includes('Example.app\nx64 : 55 4889e5'), `code in a monospace block:\n${md}`);
+    // a fence in a table cell breaks the table
+    assert.ok(!/\|[^\n]*```/.test(md), `fence in a table cell:\n${md}`);
+    // ...but a layout table (one cell, flattened) is not a table: code in it is fenced
+    assert.ok(md.includes('```\n;; layout table line\n```'), `code in a layout table:\n${md}`);
+    // a newline between the <div>s in the source split the block into one fence per line
+    assert.ok(md.includes('```\nreplace:\nE927 55 4889E5\n```'), `lines split by source newlines:\n${md}`);
+    // blank monospace lines are code only between code lines
+    assert.ok(/seven\n+```\na = 1\n\nb = 2\n```\n+eight/.test(md), `blank monospace lines:\n${md}`);
+    // a code block shows marks as typed: bold, highlight, <u> and <sup> came out as literal ** == <u>
+    assert.ok(md.includes('```\npop r14 rbp u x2\n```'), `marks in a code block:\n${md}`);
+  });
+
+  it('keeps a list nested in a list item with attributes', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-web-comment-list.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-web-comment-list/web comment list.md`, 'utf8');
+
+    // a stray </div> from the <li> wrapper pre-pass flattened the inner list into the outer one:
+    // "1. * alice", "2. Posted …", and the second comment's number came out wrong
+    assert.ok(md.includes('1. * **alice**\n\t* Posted January 19, 2010\n\t\n\tGreat overview.'), `first comment:\n${md}`);
+    assert.ok(md.includes('2. * **joe**\n\t* Posted January 31, 2010\n\t\n\tThanks.'), `second comment:\n${md}`);
+    // from item 100 on a tab no longer reaches past the marker: the paragraph became a code block
+    assert.ok(md.includes('100. hundred\n     \n     later paragraph'), `item 100:\n${md}`);
+  });
+
+  it('reads a self-closed element as empty, not as an opening tag', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-self-closed.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-self-closed/self closed.md`, 'utf8');
+
+    // <u/>, <i/> and a bold <span/> left open underlined, italicised and bolded the rest
+    assert.ok(md.includes('one two three four\nfive'), `self-closed inline elements:\n${md}`);
+    assert.ok(!/<u>|\*\*|_/.test(md.split('---').pop()), `marks leaked:\n${md}`);
+    // an open <td/> took the next cell inside it
+    assert.ok(md.includes('| a   |     | b   |'), `self-closed cell:\n${md}`);
+    assert.ok(md.includes('six\nseven'), `line break:\n${md}`);
+  });
+
   it('keeps bold and italic set by CSS on blocks and other elements', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-css-emphasis.enex` ],

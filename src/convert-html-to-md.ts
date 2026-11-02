@@ -5,6 +5,7 @@ import { NoteData } from './models/NoteData';
 import { YarleOptions } from './YarleOptions';
 import { OutputFormat } from './output-format';
 import { performRegexpOnContent } from './utils/get-title';
+import { fencesItself } from './utils/turndown-rules/replace-monospace-code-block';
 
 const unwrapElement = (node: Element) => {
     node.replaceWith(...Array.from(node.children));
@@ -29,9 +30,20 @@ const fixTasks = (node: HTMLElement) => {
 
     return node;
 };
-const fixSublistsInContent = (content: string): string => {
-    let cont = content.replace(/<li>/g, '<li><div>');
-    cont = cont.replace(/<\/li>/g, '</div></li>');
+// Wraps the content of each bare <li> in a <div>. It added `</div>` to every `</li>` but `<div>` only
+// after a bare `<li>`, so an item with attributes (web clips: `<li style=…>`) got a stray `</div>`
+// that closed an enclosing <div> early, and the parser flattened the nested list into its parent
+// ("1. * name", "2. Posted …"). Only the `</li>` of a wrapped item closes the wrapper now.
+const fixSublistsInContent = (content: string): string => {
+    const wrapped: Array<boolean> = [];
+    let cont = content.replace(/<li\b[^>]*>|<\/li>/g, tag => {
+        if (tag === '</li>') {
+            return wrapped.pop() ? '</div></li>' : tag;
+        }
+        wrapped.push(tag === '<li>');
+
+        return tag === '<li>' ? '<li><div>' : tag;
+    });
     cont = cont.replace(/<li><div>(\s)*<div>/g, '<li><div>');
     cont = cont.replace(/<\/div>(\s)*<\/div><\/li>/g, '</div></li>');
 
@@ -244,18 +256,51 @@ const wrapCssEmphasis = (node: HTMLElement) => {
     return node;
 };
 
+// turndown collapses runs of spaces outside <pre>, which broke the alignment of logs, configs
+// and tables typed in a monospace font. In a block fenced as code they become no-break spaces,
+// which turndown keeps; replaceMonospaceCodeBlock turns them back into spaces.
+const keepCodeBlockSpaces = (node: HTMLElement, yarleOptions: YarleOptions) => {
+    if (!yarleOptions.monospaceIsCodeBlock) {
+        return node;
+    }
+    node.querySelectorAll('div').forEach(div => {
+        if (!fencesItself(div)) {
+            return;
+        }
+        const walker = div.ownerDocument.createTreeWalker(div, 4 /* NodeFilter.SHOW_TEXT */);
+        for (let text = walker.nextNode(); text; text = walker.nextNode()) {
+            // a newline marks the source's own indentation between tags, not typed spaces
+            if (!text.nodeValue.includes('\n')) {
+                text.nodeValue = text.nodeValue.replace(/ /g, '\u00a0');
+            }
+        }
+    });
+
+    return node;
+};
+
+const SELF_CLOSED_ELEMENT = /<([a-zA-Z][\w-]*)(\s[^<>]*?)?\s*\/>/g;
+// void elements, and Evernote's own (en-media and en-todo are handled as they are)
+const VOID_ELEMENTS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta',
+    'param', 'source', 'track', 'wbr', 'en-media', 'en-todo', 'en-crypt', 'en-note']);
+
 export const convertHtml2MdContent = (yarleOptions: YarleOptions, htmlContent: string): string => {
 
     // Close every self-closing <a …/>: an HTML parser reads it as an opening tag, so a link left
     // open swallows the rest of the note as its link text (this replaced only the first one).
+    // Likewise every other element that is not void: an open <u/>, <i/> or <b/> underlined,
+    // italicised or bolded the rest of the note, an open <span/> carried its style on, and an
+    // open <li/> or <td/> nested what followed inside it (654 notes, 18k <span/>).
     const content = htmlContent.replace(/<!DOCTYPE en-note [^>]*>/, '<!DOCTYPE html>')
-      .replace(/(<a [^>]*)\/>/g, '$1></a>').replace(/<div[^\/\<]*\/>/g, '');
+      .replace(/(<a [^>]*)\/>/g, '$1></a>').replace(/<div[^\/\<]*\/>/g, '')
+      .replace(SELF_CLOSED_ELEMENT, (tag, name, attributes) =>
+        VOID_ELEMENTS.has(name.toLowerCase()) ? tag : `<${name}${attributes || ''}></${name}>`);
 
     const contentNode = new JSDOM(fixSublistsInContent(content)).window.document
       .getElementsByTagName('en-note').item(0) as any as HTMLElement;
 
     let contentInMd = getTurndownService(yarleOptions)
-        .turndown(fixTasks(wrapCssDecorations(moveEdgeWhitespaceOutOfInlines(wrapCssEmphasis(moveCaptionsOutOfTables(fixSublists(contentNode)))))));
+        .turndown(fixTasks(wrapCssDecorations(moveEdgeWhitespaceOutOfInlines(wrapCssEmphasis(moveCaptionsOutOfTables(keepCodeBlockSpaces(fixSublists(contentNode), yarleOptions)))))));
 
     const newLinePlaceholder = new RegExp('<YARLE_NEWLINE_PLACEHOLDER>', 'g');
     contentInMd = contentInMd.replace(newLinePlaceholder, yarleOptions.convertPlainHtmlNewlines ? '\n': '');
