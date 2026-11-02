@@ -48,11 +48,24 @@ const SAME_MARK: { [tag: string]: Set<string> } = {
   strong: new Set(['B', 'STRONG']), em: new Set(['I', 'EM']), del: new Set(['S', 'DEL', 'STRIKE']),
 };
 const SAME_MARK_STYLE: { [tag: string]: RegExp } = {
-  strong: /font-weight\s*:\s*(bold|bolder|[6-9]00)\b/i, em: /font-style\s*:\s*(italic|oblique)\b/i, del: /line-through/i,
+  strong: /(?<![\w-])font-weight\s*:\s*(bold|bolder|[6-9]00)\b/i, em: /(?<![\w-])font-style\s*:\s*(italic|oblique)\b/i,
+  del: /(?<![\w-])text-decoration(?:-line)?\s*:[^;]*line-through/i,
 };
 // a styled <span> (OneNote, web clips) is the same mark as the element
 const isSameMark = (element: any, tag: string): boolean => !!element && (SAME_MARK[tag]?.has(element.nodeName)
   || (element.nodeName === 'SPAN' && SAME_MARK_STYLE[tag]?.test(element.getAttribute('style') || '')));
+
+// Only an ancestor that writes the delimiters itself: the span rule writes bold and italic, but a
+// line-through <span> has its content wrapped in a <del> beforehand.
+const hasSameMarkAncestor = (node: any, tag: string): boolean => {
+  for (let n = node.parentNode; n && n.nodeType === 1; n = n.parentNode) {
+    if (SAME_MARK[tag]?.has(n.nodeName) || (tag !== 'del' && isSameMark(n, tag))) {
+      return true;
+    }
+  }
+
+  return false;
+};
 
 // The element right before a node with no text between them (whitespace counts as text). An empty
 // element in between (`<b>a</b><span></span><b>b</b>`) writes nothing, so it does not separate.
@@ -91,8 +104,10 @@ const endsInSameMark = (node: any, tag: string): boolean => {
 // asterisks. `_` also never opens or closes inside a word, and CJK text has no spaces between
 // words. Where the delimiter cannot work, write the HTML element, which every reader renders.
 export const emphasize = (content: string, node: any, delimiter: string, tag: string): string => {
-  // a code block shows marks as typed: `**`, `_` and `~~` would be literal characters there
-  if (isInMonospaceCodeBlock(node)) {
+  // a code block or code span shows marks as typed: `**`, `_` and `~~` would be literal characters
+  // there. A mark inside the same mark is covered by the outer one, and its own delimiters closed
+  // the outer: `**但**是**我**`, `****這**種` (a web forum's bold spans inside bold spans).
+  if (isInMonospaceCodeBlock(node) || (node.closest && node.closest('code')) || hasSameMarkAncestor(node, tag)) {
     return content;
   }
   const [, leading, inner, trailing] = content.match(/^(\s*)([\s\S]*?)(\s*)$/);

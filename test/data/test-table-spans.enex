@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export3.dtd">
+<en-export export-date="20261102T000000Z" application="Evernote" version="Evernote Mac 7.5 (457109)">
+<note><title>table spans</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd"><en-note><table><tr><th colspan="3">Shop A</th><th rowspan="3">photo</th></tr><tr><td>Address</td><td>:</td><td>1 Main St</td></tr><tr><td>Phone</td><td>:</td><td>123</td></tr></table><div>between</div><table><tr><td>one</td><td>two</td></tr><tr><td>three</td><td>four</td><td>five</td></tr></table><div>and</div><table><tr><td rowspan="2">left</td><td>r1</td></tr><tr><td>r2</td></tr><tr><td colspan="2">wide</td></tr></table><table> <tr> <td colspan="3">a whole page laid out in one cell</td> </tr> </table></en-note>]]></content><created>20150304T000000Z</created><updated>20150304T000000Z</updated><note-attributes></note-attributes></note>
+</en-export>

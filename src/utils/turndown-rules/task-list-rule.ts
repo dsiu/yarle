@@ -43,8 +43,15 @@ export const taskListRule = {
         // continuation lines are indented past the marker: a tab covers up to four columns, so from
         // item 100 on (`100. `) a tab fell short and the item's later paragraphs became a code block
         // (only a number counts: a task's `- [ ] ` has its content after `- `, as GFM reads it)
+        // An item whose first line is a nested list's first item (`* * Author`, a web comment's author
+        // list, then the comment) has that inner item's content at the marker's width plus two: a tab
+        // (four columns) under `* ` put the inner list's next items and the comment inside the inner
+        // first item. The marker's own width keeps them at the item's level. (Under `1. ` the inner
+        // content starts at five, past the tab.)
+        const opensWithListMarker = /^\n*(?:[*+-]|\d+[.)]) /.test(content);
         const continuation = (marker: string) =>
-            /^\d+\. $/.test(marker) && marker.length > 4 ? ' '.repeat(marker.length) : indentCharacter;
+            (/^\d+\. $/.test(marker) && marker.length > 4) || (opensWithListMarker && /^[*+-] $/.test(marker))
+                ? ' '.repeat(marker.length) : indentCharacter;
         const indentLines = (marker: string) => content
             .replace(/^\n+/, '') // Remove leading newlines
             .replace(/\n+$/, '\n') // Replace trailing newlines with just a single one

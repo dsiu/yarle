@@ -55,13 +55,13 @@ Dying for Christianity: millions at risk amid rise in persecution across the glo
 
 Increase in murder, as well as rape, torture and discrimination, has led the pope to warn of a ‘form of genocide’
 
-<http://www.theguardian.com/world/2015/jul/27/dying-for-christianity-millions-at-risk-amid-rise-in-persecution-across-the-globe#img-1>
+[](http://www.theguardian.com/world/2015/jul/27/dying-for-christianity-millions-at-risk-amid-rise-in-persecution-across-the-globe#img-1)
 ![[./_resources/Untitled_Note.resources/unknown_filename.png]]
 Christians are scanned with a metal detector outside the Our Lady of Consolation church, in Garissa, Kenya which was attacked with grenades by militants. Photograph: Ben Curtis/AP
 
 **[Harriet Sherwood](http://www.theguardian.com/profile/harrietsherwood)**
 
-<http://twitter.com/harrietsherwood>
+[](http://twitter.com/harrietsherwood)
 @harrietsherwood
 
 Monday 27 July 2015 14.21 BST
@@ -74,7 +74,7 @@ Last modified on Monday 27 July 2015 15.47 BST
 * [Share on LinkedIn](http://www.linkedin.com/shareArticle?mini=true&title=Dying+for+Christianity%3A+millions+at+risk+amid+rise+in+persecution+across+the+globe&url=http%3A%2F%2Fgu.com%2Fp%2F4azh6)
 * [Share on Google+](https://plus.google.com/share?url=http%3A%2F%2Fgu.com%2Fp%2F4azh6%2Fsgp&amp;hl=en-GB&amp;wwc=1)
 
-<http://www.theguardian.com/world/2015/jul/27/dying-for-christianity-millions-at-risk-amid-rise-in-persecution-across-the-globe#comments>
+[](http://www.theguardian.com/world/2015/jul/27/dying-for-christianity-millions-at-risk-amid-rise-in-persecution-across-the-globe#comments)
 
 ### [Comments](http://www.theguardian.com/world/2015/jul/27/dying-for-christianity-millions-at-risk-amid-rise-in-persecution-across-the-globe#comments)
 
@@ -91,7 +91,7 @@ Christians are facing growing persecution around the world, fuelled mainly by Is
 
                 Read more            
 
-<http://www.theguardian.com/world/2015/jul/27/christians-under-pressure-bigotry-school-imprisonment-murder>
+[](http://www.theguardian.com/world/2015/jul/27/christians-under-pressure-bigotry-school-imprisonment-murder)
 
 The scale of attacks on Christians in the Middle East, sub-Saharan [Africa](http://www.theguardian.com/world/africa), Asia and Latin America has alarmed organisations that monitor religious persecution, with most reporting a significant deterioration in recent years.
 
@@ -106,7 +106,7 @@ At Easter, the archbishop of Canterbury, Justin Welby, the leader of the Anglica
 
                 Read more            
 
-<http://www.theguardian.com/world/ng-interactive/2015/jul/27/where-in-the-world-is-it-worst-place-to-be-a-christian>
+[](http://www.theguardian.com/world/ng-interactive/2015/jul/27/where-in-the-world-is-it-worst-place-to-be-a-christian)
 
 The Prince of Wales has described threats to Christians in the Middle East as [“an indescribable tragedy”](http://www.bbc.co.uk/news/uk-29908107).
 
@@ -222,27 +222,27 @@ Topics
 
 ### Most popular
 
-* <http://www.theguardian.com/society/2015/jul/27/manchester-royal-infirmary-closes-ae-suspected-mers-cases>
+* [](http://www.theguardian.com/society/2015/jul/27/manchester-royal-infirmary-closes-ae-suspected-mers-cases)
 	![[./_resources/Untitled_Note.resources/unknown_filename.6.png]]
 	
 	#### Manchester Royal Infirmary closes A&E due to suspected Mers cases
 	
-* <http://www.theguardian.com/fashion/2015/jul/27/kate-moss-refuses-shamed-tabloid-media>
+* [](http://www.theguardian.com/fashion/2015/jul/27/kate-moss-refuses-shamed-tabloid-media)
 	![[./_resources/Untitled_Note.resources/unknown_filename.11.png]]
 	
 	#### The brilliant thing about Kate Moss is that she can never be shamed
 	
-* <http://www.theguardian.com/technology/2015/jul/27/emoji-true-meanings-explained>
+* [](http://www.theguardian.com/technology/2015/jul/27/emoji-true-meanings-explained)
 	![[./_resources/Untitled_Note.resources/unknown_filename.3.png]]
 	
 	#### 'I'm sitting next to a weirdo on the bus' and other true meanings of emoji
 	
-* <http://www.theguardian.com/uk-news/2015/jul/27/rail-operators-were-warned-of-cows-near-tracks-before-kent-collision>
+* [](http://www.theguardian.com/uk-news/2015/jul/27/rail-operators-were-warned-of-cows-near-tracks-before-kent-collision)
 	![[./_resources/Untitled_Note.resources/unknown_filename.15.png]]
 	
 	#### Rail operators were warned of cows near tracks before Kent collision
 	
-* <http://www.theguardian.com/uk-news/2015/jul/27/salford-mr-big-paul-massey-murder-risk-interview-1998>
+* [](http://www.theguardian.com/uk-news/2015/jul/27/salford-mr-big-paul-massey-murder-risk-interview-1998)
 	![[./_resources/Untitled_Note.resources/unknown_filename.7.png]]
 	
 	#### Murdered 'Mr Big' said he could be killed 'at any time' in 1998 interview
@@ -264,14 +264,14 @@ Threads **collapsed**
 
 * ![[./_resources/Untitled_Note.resources/unknown_filename.5.png]]
 	**[Lillianne](https://profile.theguardian.com/user/id/14670089)**
-	<http://discussion.theguardian.com/comment-permalink/56464029>
+	[](http://discussion.theguardian.com/comment-permalink/56464029)
 	3h ago
 	
 	                            This comment was removed by a moderator because it didn't abide by our                             [community standards](http://www.theguardian.com/community-standards).                             Replies may also be deleted. For more detail see [our FAQs](http://www.theguardian.com/community-faqs).
 	
 * ![[./_resources/Untitled_Note.resources/unknown_filename.5.png]]
 	**[nevermindlastnight](https://profile.theguardian.com/user/id/14881964)**
-	<http://discussion.theguardian.com/comment-permalink/56464149>
+	[](http://discussion.theguardian.com/comment-permalink/56464149)
 	3h ago
 	
 	                            This comment was removed by a moderator because it didn't abide by our                             [community standards](http://www.theguardian.com/community-standards).                             Replies may also be deleted. For more detail see [our FAQs](http://www.theguardian.com/community-faqs).

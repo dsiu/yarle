@@ -162,6 +162,64 @@ const moveCaptionsOutOfTables = (node: HTMLElement) => {
     return node;
 };
 
+// The GFM table plugin counts a row's cells without their spans: a `rowspan` or `colspan` cell, or
+// a short row, made the header and the delimiter row differ in width, and GFM then reads no table
+// at all (a shop list's name, address and hours beside a photo spanning six rows). Make each table
+// a full grid: every slot a span covers, and every slot missing at a row's end, gets an empty cell.
+const span = (cell: HTMLElement, name: string, max: number): number => {
+    const value = parseInt(cell.getAttribute(name) || '1', 10);
+
+    return value === 0 ? max : Math.min(Math.max(value || 1, 1), max);
+};
+const squareTables = (node: HTMLElement) => {
+    for (const table of Array.from(node.getElementsByTagName('table')) as Array<HTMLTableElement>) {
+        // a layout table (one cell, or a table inside) is flattened: a one-cell table's colspan
+        // made into cells would turn a page layout into a Markdown table (counted in cells: the
+        // whitespace between tags, which isFlattenedTable's later caller no longer sees, is still here)
+        if ((table.rows.length === 1 && table.rows[0].cells.length <= 1) || table.querySelector('table')) {
+            continue;
+        }
+        const rows = Array.from(table.rows);
+        const taken: Array<Set<number>> = rows.map(() => new Set());
+        const emptyCell = (like: HTMLElement) => node.ownerDocument.createElement(like ? like.tagName : 'td');
+        let width = 0;
+        rows.forEach((row, r) => {
+            let column = 0;
+            for (const cell of Array.from(row.cells) as Array<HTMLElement>) {
+                while (taken[r].has(column)) {
+                    cell.before(emptyCell(cell));
+                    column++;
+                }
+                const columns = span(cell, 'colspan', 1000);
+                const rowsDown = span(cell, 'rowspan', rows.length - r);
+                for (let c = 1; c < columns; c++) {
+                    cell.after(emptyCell(cell));
+                }
+                for (let below = 1; below < rowsDown; below++) {
+                    for (let c = 0; c < columns; c++) {
+                        taken[r + below].add(column + c);
+                    }
+                }
+                cell.removeAttribute('colspan');
+                cell.removeAttribute('rowspan');
+                column += columns;
+            }
+            while (taken[r].has(column)) {
+                row.append(emptyCell(row.cells[row.cells.length - 1] as HTMLElement));
+                column++;
+            }
+            width = Math.max(width, column);
+        });
+        for (const row of rows) {
+            while (row.cells.length < width) {
+                row.append(emptyCell(row.cells[row.cells.length - 1] as HTMLElement));
+            }
+        }
+    }
+
+    return node;
+};
+
 // Underline and strikethrough written in CSS (`<span style="text-decoration: underline">`,
 // a struck-through <p> or <td>) were dropped: only <u>, <s> and <del> are converted. Wrap such an
 // element's content in a real <u> or <s>. Not links, which are underlined anyway.
@@ -172,7 +230,7 @@ const wrapCssDecorations = (node: HTMLElement) => {
             continue;
         }
         const style = (element.getAttribute('style') || '').toLowerCase();
-        const decoration = style.match(/text-decoration(?:-line)?\s*:\s*([^;]*)/);
+        const decoration = style.match(/(?<![\w-])text-decoration(?:-line)?\s*:\s*([^;]*)/);
         if (!decoration) {
             continue;
         }
@@ -188,14 +246,16 @@ const wrapCssDecorations = (node: HTMLElement) => {
     return node;
 };
 
+// Every CSS property below is matched only where a declaration starts (`(?<![\w-])`): a web page's
+// custom property such as `--paper-input-underline: …` or `--x-font-weight: 700` is not styling.
 // Bold and italic written in CSS on anything but a <span> (`<div style="font-style:italic">` as an
 // image caption, a bold <td>, <p> or <cite>) were dropped: only <b>/<i> and styled <span>s are
 // converted. Wrap each run of inline content in a real <strong> or <em>, line by line, and let
 // the styling reach child blocks. Not links or code, not a heading or <th> (bold already), and
 // not content set back to normal weight or style.
 const CSS_EMPHASIS: Array<[string, RegExp, RegExp, string]> = [
-    ['strong', /font-weight\s*:\s*(bold|bolder|[6-9]00)\b/i, /font-weight\s*:\s*(normal|lighter|[1-5]00)\b/i, 'b, strong'],
-    ['em', /font-style\s*:\s*(italic|oblique)\b/i, /font-style\s*:\s*normal\b/i, 'i, em'],
+    ['strong', /(?<![\w-])font-weight\s*:\s*(bold|bolder|[6-9]00)\b/i, /(?<![\w-])font-weight\s*:\s*(normal|lighter|[1-5]00)\b/i, 'b, strong'],
+    ['em', /(?<![\w-])font-style\s*:\s*(italic|oblique)\b/i, /(?<![\w-])font-style\s*:\s*normal\b/i, 'i, em'],
 ];
 const BLOCK_ELEMENTS = new Set(['ADDRESS', 'ARTICLE', 'ASIDE', 'BLOCKQUOTE', 'CENTER', 'DD', 'DIV', 'DL', 'DT',
     'FIGCAPTION', 'FIGURE', 'FOOTER', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEADER', 'HR', 'LI', 'NAV', 'OL', 'P',
@@ -256,6 +316,65 @@ const wrapCssEmphasis = (node: HTMLElement) => {
     return node;
 };
 
+// A <b> or <i> holding blocks (a web page's bold column of headings and paragraphs) wrote `**`
+// around them all, and a mark cannot span blocks: `**### heading` and `text**` stayed literal.
+// Make it a block carrying the same CSS, which wrapCssEmphasis marks run by run, line by line.
+const BLOCK_SELECTOR = Array.from(BLOCK_ELEMENTS).filter(name => name !== 'EN-NOTE').join(',');
+const blockMarksToCss = (node: HTMLElement) => {
+    for (const [selector, css] of [['b, strong', 'font-weight: bold'], ['i, em', 'font-style: italic']]) {
+        for (const mark of Array.from(node.querySelectorAll(selector)) as Array<HTMLElement>) {
+            if (!mark.querySelector(BLOCK_SELECTOR) || mark.closest('a, pre, code')) {
+                continue;
+            }
+            const block = node.ownerDocument.createElement('div');
+            block.setAttribute('style', `${mark.getAttribute('style') || ''};${css}`);
+            block.append(...Array.from(mark.childNodes));
+            mark.replaceWith(block);
+        }
+    }
+
+    return node;
+};
+
+// Monospace text right in the note or in a <div> beside blocks (`<en-note><font face="Andale
+// Mono">#…</font><div>…</div>`) is never a <div> itself, so the code rule never saw it and the
+// line stayed outside the fence. A browser lays such a run out as a block of its own: wrap it in a
+// <div>, kept only where that <div> would be fenced, so no other text moves.
+const wrapLooseMonospace = (node: HTMLElement, yarleOptions: YarleOptions) => {
+    if (!yarleOptions.monospaceIsCodeBlock) {
+        return node;
+    }
+    const containers = [node, ...Array.from(node.getElementsByTagName('div'))];
+    for (const container of containers) {
+        const children = Array.from(container.childNodes) as Array<HTMLElement>;
+        if (container !== node && !children.some(child => child.nodeType === 1 && BLOCK_ELEMENTS.has(child.tagName))) {
+            continue;
+        }
+        let run: Array<Node> = [];
+        const flush = () => {
+            if (run.some(child => child.textContent.trim())) {
+                const block = node.ownerDocument.createElement('div');
+                run[0].parentNode.insertBefore(block, run[0]);
+                block.append(...run);
+                if (!fencesItself(block)) {
+                    block.replaceWith(...Array.from(block.childNodes));
+                }
+            }
+            run = [];
+        };
+        for (const child of children) {
+            if (child.nodeType === 1 && BLOCK_ELEMENTS.has(child.tagName)) {
+                flush();
+            } else if (child.nodeType === 1 || child.nodeType === 3) {
+                run.push(child);
+            }
+        }
+        flush();
+    }
+
+    return node;
+};
+
 // turndown collapses runs of spaces outside <pre>, which broke the alignment of logs, configs
 // and tables typed in a monospace font. In a block fenced as code they become no-break spaces,
 // which turndown keeps; replaceMonospaceCodeBlock turns them back into spaces.
@@ -300,7 +419,7 @@ export const convertHtml2MdContent = (yarleOptions: YarleOptions, htmlContent: s
       .getElementsByTagName('en-note').item(0) as any as HTMLElement;
 
     let contentInMd = getTurndownService(yarleOptions)
-        .turndown(fixTasks(wrapCssDecorations(moveEdgeWhitespaceOutOfInlines(wrapCssEmphasis(moveCaptionsOutOfTables(keepCodeBlockSpaces(fixSublists(contentNode), yarleOptions)))))));
+        .turndown(fixTasks(wrapCssDecorations(moveEdgeWhitespaceOutOfInlines(wrapCssEmphasis(blockMarksToCss(squareTables(moveCaptionsOutOfTables(keepCodeBlockSpaces(wrapLooseMonospace(fixSublists(contentNode), yarleOptions), yarleOptions)))))))));
 
     const newLinePlaceholder = new RegExp('<YARLE_NEWLINE_PLACEHOLDER>', 'g');
     contentInMd = contentInMd.replace(newLinePlaceholder, yarleOptions.convertPlainHtmlNewlines ? '\n': '');

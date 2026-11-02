@@ -15,7 +15,7 @@ const ownFont = (node: any): string => {
     if (node.tagName === 'FONT' && nodeProxy.face?.value) {
         return nodeProxy.face.value;
     }
-    const match = nodeProxy.style?.value?.match(/font-family:([^;]+)/);
+    const match = nodeProxy.style?.value?.match(/(?<![\w-])font-family\s*:([^;]+)/);
 
     return match ? match[1] : null;
 };

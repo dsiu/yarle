@@ -64,8 +64,8 @@ export const spanRule = {
             // this aims to care for bold text generated as <span style="font-weight: bold;">Bold</span>
             if (content !== '<YARLE_NEWLINE_PLACEHOLDER>') {
                 // `font-weight: 700` is bold too; a font named "…Bold" or "…Italic" is not
-                const hasBold = /font-weight\s*:\s*(bold|bolder|[6-9]00)\b/i.test(nodeValue);
-                const hasItalic = /font-style\s*:\s*(italic|oblique)\b/i.test(nodeValue);
+                const hasBold = /(?<![\w-])font-weight\s*:\s*(bold|bolder|[6-9]00)\b/i.test(nodeValue);
+                const hasItalic = /(?<![\w-])font-style\s*:\s*(italic|oblique)\b/i.test(nodeValue);
                 if (hasBold && !hasItalic) { return emphasize(content, node, languageItems.bold, 'strong'); }
                 if (!hasBold && hasItalic) { return emphasize(content, node, languageItems.italic, 'em'); }
                 if (hasBold && hasItalic) {

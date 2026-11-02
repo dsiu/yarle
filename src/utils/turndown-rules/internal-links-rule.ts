@@ -96,7 +96,7 @@ const linkReplacement = (content: any, node: any): string => {
         
         const isValueEvernoteLink = isEvernoteLink(value);
         if (value.match(/^(https?:|tel:|www\.|file:|busycalevent:|ftp:|mailto:)/) && !isValueEvernoteLink) {
-            return getShortLinkIfPossible(token, value);
+            return getShortLinkIfPossible(token, value, isHiddenAmongText(node));
         }
 
         const displayName = sanitize(token['text'], {replacement: yarleOptions.replacementChar || '_'}).replace(/[\[\]\#\^]/g, '')
@@ -166,8 +166,25 @@ export const wikiStyleLinksRule = {
     replacement: (content: any, node: any) => linkReplacement(content, node) + contentAfterLeadingHeading(node),
 };
 
-export const getShortLinkIfPossible = (token: any, value: string): string => {
+// A web link with no text among other text (a page's heading permalink, `<h2><a href="…#top"></a>
+// Title</h2>`) shows nothing in the original; it was written as its address, glued to the next
+// word (`…/aand`). `[](url)` shows nothing too and keeps the address. Alone in its block it stays
+// its address, the only way to see it. An attachment link always shows. A destination with a space
+// (`tel:+852 1234 5678`) ended at the space and the link showed as text: mdLinkTarget wraps it.
+const isHiddenAmongText = (node: any): boolean => {
+    if (node.textContent.trim() || node.querySelector('img, en-media')) {
+        return false;
+    }
+    const block = node.closest('p, div, li, td, th, h1, h2, h3, h4, h5, h6, blockquote, en-note');
+
+    return Boolean(block && block.textContent.trim());
+};
+export const getShortLinkIfPossible = (token: any, value: string, hidden = false): string => {
+    if (hidden && (!token['text'] || !token['text'].trim())) {
+        return `${token['mdKeyword']}[](${mdLinkTarget(value)})`;
+    }
+
     return (!token['text'] || _.unescape(token['text']) === _.unescape(value))
                 ? yarleOptions.generateNakedUrls ? value : `<${value}>`
-                : `${token['mdKeyword']}[${token['text']}](${value})`;
+                : `${token['mdKeyword']}[${token['text']}](${mdLinkTarget(value)})`;
 };

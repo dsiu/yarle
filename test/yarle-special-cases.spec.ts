@@ -2145,7 +2145,7 @@ dateFormat: undefined,
     const md = fs.readFileSync(`${noteDir}/Price $29 and $1M plan.md`, 'utf8');
 
     // String.replace reads `$$` as `$` and `$1`/`$2` as capture groups when the replacement is a string
-    assert.ok(md.includes('Rating: $$$$ for dinner, $$$ for lunch.'), 'body dollar signs were collapsed');
+    assert.ok(md.replace(/\\\$/g, '$').includes('Rating: $$$$ for dinner, $$$ for lunch.'), 'body dollar signs were collapsed');
     const link = md.match(/(\.\/_resources\/[^\])\n]*\.png)/);
     assert.ok(link, 'no link to the attachment');
     assert.ok(link[1].includes('Price_$29_and_$1M_plan.resources'), `title mangled in link: ${link[1]}`);
@@ -2229,7 +2229,7 @@ dateFormat: undefined,
     const clip = fs.readFileSync(`${noteDir}/self-closing links.md`, 'utf8');
     assert.ok(clip.includes('Article headline'), `headline lost:\n${clip}`);
     assert.ok(clip.includes('The article body \\[with brackets\\] must survive.'), `body lost or inside a link:\n${clip}`);
-    assert.ok(!/\]\(http:\/\/example\.com\/(two|three)\)/.test(clip), `article became link text:\n${clip}`);
+    assert.ok(!/\[[^\]]+\]\(http:\/\/example\.com\/(two|three)\)/.test(clip), `article became link text:\n${clip}`);
 
     // a link starting with a heading kept only `## [heading](url)`
     const card = fs.readFileSync(`${noteDir}/heading inside a link.md`, 'utf8');
@@ -2477,6 +2477,154 @@ dateFormat: undefined,
     // a link is underlined anyway, and a plain <s> is unchanged
     assert.ok(md.includes('g [a link](http://example.com) h'), `link changed:\n${md}`);
     assert.ok(md.includes('i ~~plain strike~~ j'), `<s> changed:\n${md}`);
+  });
+
+  it('escapes a dollar sign that would open or close TeX maths, and only that one', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-math-dollars.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+      monospaceIsCodeBlock: true,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-math-dollars/math dollars.md`, 'utf8');
+
+    // Obsidian and pandoc read `$$…$$` and `$…$` (closing `$` after a non-space) as maths: the
+    // text between became a formula and the bold marks around it showed as literal `**`
+    assert.ok(md.includes('Price $30 and $40 today, or US\\$45.'), `prices:\n${md}`);
+    assert.ok(md.includes('\\$\\$\\$') && md.includes('\\$\\$'), `$$ runs not escaped:\n${md}`);
+    assert.ok(md.includes('cd "\\$HOME" && echo "\\$PATH"'), `shell variables:\n${md}`);
+    // code shows text as typed: nothing escaped there
+    assert.ok(md.includes('`echo $HOME$PATH`'), `inline code escaped:\n${md}`);
+    assert.ok(md.includes('x=$a$b'), `code block escaped:\n${md}`);
+  });
+
+  it('a mark inside the same mark, or inside inline code, writes no delimiters', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-nested-marks.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-nested-marks/nested marks.md`, 'utf8');
+
+    // bold inside bold closed the outer bold and opened it again: `**但**是**我**們**看。**`, and
+    // `****這**種` where both opened at once
+    assert.ok(md.includes('**但是我們看。**'), `bold in bold:\n${md}`);
+    assert.ok(md.includes('**這種寫法。**'), `bold in bold at the start:\n${md}`);
+    assert.ok(md.includes('x **outer inner tail** y'), `strong in b:\n${md}`);
+    assert.ok(md.includes('p _slanted again more_ q'), `em in i:\n${md}`);
+    assert.ok(md.includes('r ~~gone twice~~ t'), `del in s:\n${md}`);
+    // a code span shows `**` as typed
+    assert.ok(md.includes('use `<pre lang="python">` here'), `bold in inline code:\n${md}`);
+  });
+
+  it('a CSS custom property is not styling', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-css-variables.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+      monospaceIsCodeBlock: true,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-css-variables/css variables.md`, 'utf8');
+
+    // a web clip's `--…-font-weight: 700` or `--…-text-decoration: underline` styled the whole page
+    assert.ok(md.includes('\nplain article text\n'), `custom properties read as styling:\n${md}`);
+    assert.ok(md.includes('a plain span b'), `custom property on a span:\n${md}`);
+    assert.ok(md.includes('c **real bold** d'), `real bold lost:\n${md}`);
+  });
+
+  it('a table with rowspan, colspan or a short row is still a table', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-table-spans.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-table-spans/table spans.md`, 'utf8');
+
+    // the delimiter row was as wide as the row with the fewest elements, so GFM read no table
+    const tables = md.split(/\n\n+/).filter(block => block.startsWith('|'));
+    assert.equal(tables.length, 3, `tables:\n${md}`);
+    for (const table of tables) {
+      const widths = table.split('\n').map(line => line.split('|').length);
+      assert.ok(widths.every(w => w === widths[0]), `rows of different widths:\n${table}`);
+    }
+    assert.ok(md.includes('| Shop A |     |     | photo |\n| --- | --- | --- | --- |'), `spanned header:\n${md}`);
+    assert.ok(md.includes('| Address | :   | 1 Main St |     |'), `row under a rowspan:\n${md}`);
+    assert.ok(md.includes('| one | two |     |'), `short row:\n${md}`);
+    assert.ok(md.includes('|     | r2  |') && md.includes('| wide |     |'), `rowspan in the first column:\n${md}`);
+    // a one-cell layout table stays flattened, whatever its colspan
+    assert.ok(md.includes('\na whole page laid out in one cell'), `one-cell table:\n${md}`);
+  });
+
+  it('a bold or italic element holding blocks marks each line', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-block-marks.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-block-marks/block marks.md`, 'utf8');
+
+    // `**### Head office … Second line**`: a mark cannot span blocks, both `**` stayed literal
+    assert.ok(md.includes('### Head office\n'), `heading:\n${md}`);
+    assert.ok(md.includes('**Bus 1 to the stop, then walk.**') && md.includes('**Second line**'), `bold lines:\n${md}`);
+    assert.ok(md.includes('_slanted one_') && md.includes('_slanted two_'), `italic paragraphs:\n${md}`);
+    assert.ok(!md.includes('**#'), `mark before a heading:\n${md}`);
+  });
+
+  it('a link with no text shows nothing, and a link address with a space stays a link', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-link-edges.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-link-edges/link edges.md`, 'utf8');
+
+    // the address was written instead, glued to the next word: `<http://example.com/a>and`
+    assert.ok(md.includes('## [](http://example.com/page#part-1)Part one'), `heading permalink:\n${md}`);
+    assert.ok(md.includes('see [](http://example.com/a)and more'), `empty link:\n${md}`);
+    // `(tel:+852 1234 5678)` ends at the first space: not a link
+    assert.ok(md.includes('[+852 1234 5678](<tel:+852 1234 5678>)'), `address with spaces:\n${md}`);
+    assert.ok(md.includes('[normal](http://example.com/b)'), `plain link changed:\n${md}`);
+    // alone in its block, a link with no text stays its address: the only way to see it
+    assert.ok(md.includes('\n<http://example.com/alone>\n'), `lone empty link:\n${md}`);
+  });
+
+  it('monospace text right in the note joins the code block', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-loose-monospace.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+      monospaceIsCodeBlock: true,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-loose-monospace/loose monospace.md`, 'utf8');
+
+    // the first line, not in a <div>, stayed outside the fence as `\# INSTALL…`
+    assert.ok(md.includes('```\n# INSTALL: save as ~/.gdbinit\n#\n# DESCRIPTION: config\n```'), `first line outside the fence:\n${md}`);
+    // inline monospace in prose, and prose beside a block, are unchanged
+    assert.ok(md.includes('plain text inline mono here'), `inline monospace:\n${md}`);
+    assert.ok(md.includes('Before\na block\nafter'), `prose beside a block:\n${md}`);
+  });
+
+  it('an item opening with a nested list keeps what follows at its own level', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-comment-list.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-comment-list/comment list.md`, 'utf8');
+
+    // `* * Author` then tab-indented lines: the second author line and the comment fell inside
+    // the first author item (a tab reaches its content column, four)
+    assert.ok(md.includes('* * Author name\n  \t* badge\n  * 2 days ago\n'), `author list:\n${md}`);
+    assert.ok(/\n  The reply text\.\n/.test(md), `comment level:\n${md}`);
+    assert.ok(md.includes('\n* Second comment'), `next item:\n${md}`);
   });
 
   it('really long filename', async () => {

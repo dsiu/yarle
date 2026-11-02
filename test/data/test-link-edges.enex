@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export3.dtd">
+<en-export export-date="20261102T000000Z" application="Evernote" version="Evernote Mac 7.5 (457109)">
+<note><title>link edges</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd"><en-note><h2><a href="http://example.com/page#part-1"></a>Part one</h2><div>see <a href="http://example.com/a"></a>and more</div><div>call <a href="tel:+852 1234 5678">+852 1234 5678</a> now</div><div><a href="http://example.com/b">normal</a></div><div><a href="http://example.com/alone"></a></div></en-note>]]></content><created>20150304T000000Z</created><updated>20150304T000000Z</updated><note-attributes></note-attributes></note>
+</en-export>

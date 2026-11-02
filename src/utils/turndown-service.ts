@@ -20,6 +20,7 @@ import { encryptRule } from './turndown-rules/encrypt-rule';
 import { inlineCodeWithBreaksRule } from './turndown-rules/inline-code-with-breaks-rule';
 import { boldRule } from './turndown-rules/bold-rule';
 import { preformattedRule } from './turndown-rules/preformatted-rule';
+import { escapeMathDollars } from './escape-math-dollars';
 import { supSubRule } from './turndown-rules/sup-sub-rule';
 
 export const getTurndownService = (yarleOptions: YarleOptions) => {
@@ -83,6 +84,9 @@ export const getTurndownService = (yarleOptions: YarleOptions) => {
     }
     if (yarleOptions.keepMDCharactersOfENNotes) {
         turndownService.escape = ((str: string) => str);
+    } else {
+        const escape = turndownService.escape.bind(turndownService);
+        turndownService.escape = ((str: string) => escapeMathDollars(escape(str)));
     }
 
     turndownService.addRule('divBlock', divRule);
