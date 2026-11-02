@@ -2559,6 +2559,32 @@ dateFormat: undefined,
     assert.ok(md.includes('\na whole page laid out in one cell'), `one-cell table:\n${md}`);
   });
 
+  it('a table with at most one filled cell per row is a layout, not a table', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-layout-grid.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-layout-grid/layout grid.md`, 'utf8');
+
+    // OneNote places each outline in a grid of empty spacer cells: the outline was one Markdown
+    // cell with its list written as `1. First task<br>\t1. sub one`
+    assert.ok(md.includes('1. First task\n\t1. sub one\n\t2. sub two\n2. Second task'), `list in a grid:\n${md}`);
+    assert.ok(md.includes('A closing remark.') && md.includes('* my agenda\n* more'), `other outline:\n${md}`);
+    assert.ok(md.includes('after the grid\n\nchat line one\nchat line two\n\ndata next'), `two-column layout:\n${md}`);
+    assert.ok(!md.includes('<br>'), `cell breaks left:\n${md}`);
+    // a table with two filled cells in a row stays a table, empty cells and blank code lines too
+    const tables = md.split(/\n\n+/).filter(block => block.startsWith('|'));
+    // the cell's own bold stays
+    assert.ok(md.includes('**bold by its cell**\nplain cell'), `cell style:\n${md}`);
+    // a page table holding a grid stays flattened once the grid is gone
+    assert.ok(md.includes('side heading\n\n* popular post\n\nmain column'), `page table:\n${md}`);
+    assert.equal(tables.length, 2, `tables:\n${md}`);
+    assert.ok(md.includes('| Ann |'), `data table:\n${md}`);
+    assert.ok(md.includes('`apt-get install x`'), `code listing:\n${md}`);
+  });
+
   it('a bold or italic element holding blocks marks each line', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-block-marks.enex` ],

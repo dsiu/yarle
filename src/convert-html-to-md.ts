@@ -162,6 +162,47 @@ const moveCaptionsOutOfTables = (node: HTMLElement) => {
     return node;
 };
 
+// A table in which no row has two filled cells relates nothing side by side: it places content on
+// a page (OneNote's grid of spacer cells around each outline, a column beside an empty spacer).
+// As a Markdown table its content was one cell, lists and paragraphs written as `<br>`-joined
+// text. Write the filled cells one after another instead. A cell holding code counts as filled
+// even when blank (a listing's empty line beside its line number). Each block keeps the styles of
+// its cell, row and table (bold set on a `<td>`), and a header cell stays bold.
+const isFilledCell = (cell: HTMLElement): boolean =>
+    !!(cell.textContent || '').trim() || !!cell.querySelector('img, en-media, en-todo, input, iframe, video, audio, object, embed, svg, hr, code, pre');
+const flattenLayoutGrids = (node: HTMLElement) => {
+    const tables = Array.from(node.getElementsByTagName('table')) as Array<HTMLTableElement>;
+    // a table holding a table is a layout the GFM plugin flattens; once a grid inside it is gone it
+    // would read as a table again, so it is flattened here
+    const heldTable = new Set(tables.filter(table => table.querySelector('table')));
+    // innermost first, so a grid inside a grid is gone before its parent is looked at
+    for (const table of tables.reverse()) {
+        const rows = Array.from(table.rows);
+        if (table.querySelector('table') || (!heldTable.has(table) && (!rows.some(row => row.cells.length > 1)
+            || rows.some(row => (Array.from(row.cells) as Array<HTMLElement>).filter(isFilledCell).length > 1)))) {
+            continue;
+        }
+        for (const row of rows) {
+            for (const cell of (Array.from(row.cells) as Array<HTMLElement>).filter(isFilledCell)) {
+                const block = node.ownerDocument.createElement('div');
+                const styles = cell.tagName === 'TH' ? ['font-weight: bold'] : [];
+                for (let part: HTMLElement | null = cell; part && part !== table.parentElement; part = part.parentElement) {
+                    styles.unshift(part.getAttribute('style') || '');
+                }
+                const style = styles.map(s => s.trim().replace(/;$/, '')).filter(Boolean).join('; ');
+                if (style) {
+                    block.setAttribute('style', style);
+                }
+                block.append(...Array.from(cell.childNodes));
+                table.before(block);
+            }
+        }
+        table.remove();
+    }
+
+    return node;
+};
+
 // The GFM table plugin counts a row's cells without their spans: a `rowspan` or `colspan` cell, or
 // a short row, made the header and the delimiter row differ in width, and GFM then reads no table
 // at all (a shop list's name, address and hours beside a photo spanning six rows). Make each table
@@ -418,7 +459,7 @@ export const convertHtml2MdContent = (yarleOptions: YarleOptions, htmlContent: s
     const contentNode = new JSDOM(fixSublistsInContent(content)).window.document
       .getElementsByTagName('en-note').item(0) as any as HTMLElement;
 
-    const prepared = fixTasks(wrapCssDecorations(moveEdgeWhitespaceOutOfInlines(wrapCssEmphasis(blockMarksToCss(squareTables(moveCaptionsOutOfTables(keepCodeBlockSpaces(wrapLooseMonospace(fixSublists(contentNode), yarleOptions), yarleOptions))))))));
+    const prepared = fixTasks(wrapCssDecorations(moveEdgeWhitespaceOutOfInlines(wrapCssEmphasis(blockMarksToCss(squareTables(flattenLayoutGrids(moveCaptionsOutOfTables(keepCodeBlockSpaces(wrapLooseMonospace(fixSublists(contentNode), yarleOptions), yarleOptions)))))))));
     let contentInMd: string;
     cacheCodeBlockChecks(true);
     try {
