@@ -27,7 +27,29 @@ const NOT_CODE = new Set(['IMG', 'EN-MEDIA', 'EN-TODO', 'INPUT', 'HR', 'TABLE', 
 // A monospace font all of the node's text is set in: the nearest font above each non-blank text
 // node (and each <br>, so a blank line keeps its font), or 'mixed'. It used to follow only a chain of
 // single children, so a monospace line holding a link (text, <a>, text) read as 'mixed'.
+// Every link, mark and span asks whether it sits in a code block, which looked at each <div> above
+// it and walked that <div>'s whole subtree: quadratic in a note's size (a long web clip took 15 s
+// instead of 0.2, and a rebuild 20 minutes instead of 4). While turndown runs the tree does not
+// change, so each node's answers are kept for that conversion; never while the passes before it
+// are still rewriting the tree.
+let fontCache: WeakMap<any, string> | undefined;
+let fencesCache: WeakMap<any, boolean> | undefined;
+export const cacheCodeBlockChecks = (on: boolean): void => {
+    fontCache = on ? new WeakMap() : undefined;
+    fencesCache = on ? new WeakMap() : undefined;
+};
+
 const deepestFont: (node: any) => string = node => {
+    if (fontCache?.has(node)) {
+        return fontCache.get(node);
+    }
+    const font = deepestFontUncached(node);
+    fontCache?.set(node, font);
+
+    return font;
+};
+
+const deepestFontUncached: (node: any) => string = node => {
     if (node.nodeType !== 1) {
         return null;
     }
@@ -112,9 +134,16 @@ const inTableCell = (node: any): boolean => {
     return !!cell && !isFlattenedTable(cell.closest('table'));
 };
 
-export const fencesItself = (node: any): boolean =>
-    isMonospaceCodeBlock(node) && !isInsideCodeBlock(node) && !node.querySelector('pre, code')
-    && !inTableCell(node);
+export const fencesItself = (node: any): boolean => {
+    if (fencesCache?.has(node)) {
+        return fencesCache.get(node);
+    }
+    const fences = isMonospaceCodeBlock(node) && !isInsideCodeBlock(node) && !node.querySelector('pre, code')
+        && !inTableCell(node);
+    fencesCache?.set(node, fences);
+
+    return fences;
+};
 
 // The element next to a node, past the whitespace the source puts between tags (a newline
 // between two <div>s split one block of monospace lines into a fence per line).

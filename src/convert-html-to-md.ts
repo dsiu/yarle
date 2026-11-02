@@ -5,7 +5,7 @@ import { NoteData } from './models/NoteData';
 import { YarleOptions } from './YarleOptions';
 import { OutputFormat } from './output-format';
 import { performRegexpOnContent } from './utils/get-title';
-import { fencesItself } from './utils/turndown-rules/replace-monospace-code-block';
+import { cacheCodeBlockChecks, fencesItself } from './utils/turndown-rules/replace-monospace-code-block';
 
 const unwrapElement = (node: Element) => {
     node.replaceWith(...Array.from(node.children));
@@ -418,8 +418,14 @@ export const convertHtml2MdContent = (yarleOptions: YarleOptions, htmlContent: s
     const contentNode = new JSDOM(fixSublistsInContent(content)).window.document
       .getElementsByTagName('en-note').item(0) as any as HTMLElement;
 
-    let contentInMd = getTurndownService(yarleOptions)
-        .turndown(fixTasks(wrapCssDecorations(moveEdgeWhitespaceOutOfInlines(wrapCssEmphasis(blockMarksToCss(squareTables(moveCaptionsOutOfTables(keepCodeBlockSpaces(wrapLooseMonospace(fixSublists(contentNode), yarleOptions), yarleOptions)))))))));
+    const prepared = fixTasks(wrapCssDecorations(moveEdgeWhitespaceOutOfInlines(wrapCssEmphasis(blockMarksToCss(squareTables(moveCaptionsOutOfTables(keepCodeBlockSpaces(wrapLooseMonospace(fixSublists(contentNode), yarleOptions), yarleOptions))))))));
+    let contentInMd: string;
+    cacheCodeBlockChecks(true);
+    try {
+        contentInMd = getTurndownService(yarleOptions).turndown(prepared);
+    } finally {
+        cacheCodeBlockChecks(false);
+    }
 
     const newLinePlaceholder = new RegExp('<YARLE_NEWLINE_PLACEHOLDER>', 'g');
     contentInMd = contentInMd.replace(newLinePlaceholder, yarleOptions.convertPlainHtmlNewlines ? '\n': '');
