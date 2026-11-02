@@ -212,12 +212,16 @@ const span = (cell: HTMLElement, name: string, max: number): number => {
 
     return value === 0 ? max : Math.min(Math.max(value || 1, 1), max);
 };
+// A layout table (one cell, or a table inside), which the GFM plugin writes as its content. Counted
+// in cells: the whitespace between tags, which isFlattenedTable's later caller no longer sees, is
+// still here.
+const isLayoutTable = (table: HTMLTableElement): boolean =>
+    (table.rows.length === 1 && table.rows[0].cells.length <= 1) || !!table.querySelector('table');
 const squareTables = (node: HTMLElement) => {
     for (const table of Array.from(node.getElementsByTagName('table')) as Array<HTMLTableElement>) {
-        // a layout table (one cell, or a table inside) is flattened: a one-cell table's colspan
-        // made into cells would turn a page layout into a Markdown table (counted in cells: the
-        // whitespace between tags, which isFlattenedTable's later caller no longer sees, is still here)
-        if ((table.rows.length === 1 && table.rows[0].cells.length <= 1) || table.querySelector('table')) {
+        // a layout table is flattened: a one-cell table's colspan made into cells would turn a page
+        // layout into a Markdown table
+        if (isLayoutTable(table)) {
             continue;
         }
         const rows = Array.from(table.rows);
@@ -256,6 +260,26 @@ const squareTables = (node: HTMLElement) => {
                 row.append(emptyCell(row.cells[row.cells.length - 1] as HTMLElement));
             }
         }
+    }
+
+    return node;
+};
+
+// A Markdown cell holds inline text only: a heading in a cell (a pasted CV's company names, the
+// "Customer Information" of a shop's receipt) showed its `#####` marks. Write it as a bold line,
+// as a heading in a cell reads; plain in a header cell, bold already. Layout tables are written
+// as blocks, where a heading stays one.
+const headingsInCellsToBold = (node: HTMLElement) => {
+    for (const heading of Array.from(node.querySelectorAll('h1, h2, h3, h4, h5, h6')) as Array<HTMLElement>) {
+        const cell = heading.closest('td, th');
+        const table = heading.closest('table') as HTMLTableElement;
+        if (!cell || cell.closest('table') !== table || isLayoutTable(table)) {
+            continue;
+        }
+        const line = node.ownerDocument.createElement('p');
+        const text = cell.tagName === 'TH' ? line : line.appendChild(node.ownerDocument.createElement('strong'));
+        text.append(...Array.from(heading.childNodes));
+        heading.replaceWith(line);
     }
 
     return node;
@@ -459,7 +483,7 @@ export const convertHtml2MdContent = (yarleOptions: YarleOptions, htmlContent: s
     const contentNode = new JSDOM(fixSublistsInContent(content)).window.document
       .getElementsByTagName('en-note').item(0) as any as HTMLElement;
 
-    const prepared = fixTasks(wrapCssDecorations(moveEdgeWhitespaceOutOfInlines(wrapCssEmphasis(blockMarksToCss(squareTables(flattenLayoutGrids(moveCaptionsOutOfTables(keepCodeBlockSpaces(wrapLooseMonospace(fixSublists(contentNode), yarleOptions), yarleOptions)))))))));
+    const prepared = fixTasks(wrapCssDecorations(moveEdgeWhitespaceOutOfInlines(wrapCssEmphasis(blockMarksToCss(headingsInCellsToBold(squareTables(flattenLayoutGrids(moveCaptionsOutOfTables(keepCodeBlockSpaces(wrapLooseMonospace(fixSublists(contentNode), yarleOptions), yarleOptions))))))))));
     let contentInMd: string;
     cacheCodeBlockChecks(true);
     try {

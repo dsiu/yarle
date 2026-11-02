@@ -2585,6 +2585,27 @@ dateFormat: undefined,
     assert.ok(md.includes('`apt-get install x`'), `code listing:\n${md}`);
   });
 
+  it('a heading inside a table cell is written bold', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-heading-in-cell.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-heading-in-cell/heading in cell.md`, 'utf8');
+
+    // a Markdown cell holds no heading: `| ##### Acme Limited<br><br>**Project Manager** |` showed the #s
+    const table = md.split(/\n\n+/).filter(block => block.startsWith('|')).join('\n');
+    assert.ok(!/(\||<br>)\s*#/.test(table), `heading marks in a cell:\n${md}`);
+    assert.ok(table.includes('| **Acme Limited**<br>'), `heading text:\n${md}`);
+    assert.ok(table.includes('**Customer Information [edit](https://example.com/x)**'), `heading with a link:\n${md}`);
+    assert.ok(table.includes('| Header heading |'), `heading in a header cell:\n${md}`);
+    assert.ok(table.includes('**with bold inside**'), `bold inside a heading:\n${md}`);
+    // outside a table, and in a one-cell layout table (flattened), a heading stays a heading
+    assert.ok(md.includes('\n### A heading outside stays one\n'), `heading outside:\n${md}`);
+    assert.ok(md.includes('\n#### alone in a layout cell\n'), `heading in a layout cell:\n${md}`);
+  });
+
   it('a bold or italic element holding blocks marks each line', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-block-marks.enex` ],
