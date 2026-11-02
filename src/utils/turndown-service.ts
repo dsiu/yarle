@@ -22,6 +22,7 @@ import { boldRule } from './turndown-rules/bold-rule';
 import { preformattedRule } from './turndown-rules/preformatted-rule';
 import { escapeMathDollars } from './escape-math-dollars';
 import { supSubRule } from './turndown-rules/sup-sub-rule';
+import { headingRule } from './turndown-rules/heading-rule';
 
 export const getTurndownService = (yarleOptions: YarleOptions) => {
     /* istanbul ignore next */
@@ -52,6 +53,7 @@ export const getTurndownService = (yarleOptions: YarleOptions) => {
     turndownService.addRule('inline code with breaks', inlineCodeWithBreaksRule);
     turndownService.addRule('preformatted', preformattedRule);
     turndownService.addRule('sup and sub', supSubRule);
+    turndownService.addRule('heading', headingRule);
     if (yarleOptions.outputFormat === OutputFormat.LogSeqMD) {
         turndownService.addRule('logseq_hr', {
                 filter: ['hr'],

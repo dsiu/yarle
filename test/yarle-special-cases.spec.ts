@@ -2585,6 +2585,35 @@ dateFormat: undefined,
     assert.ok(md.includes('`apt-get install x`'), `code listing:\n${md}`);
   });
 
+  it('a heading holding blocks or line breaks stays one heading, with <br>', async () => {
+    const options: YarleOptions = {
+      enexSources: [ `${testDataFolder}test-heading-blocks.enex` ],
+      outputDir: 'out',
+      outputFormat: OutputFormat.PortableMD,
+    };
+    await yarle.dropTheRope(options);
+    const md = fs.readFileSync(`${__dirname}/../out/notes/test-heading-blocks/heading blocks.md`, 'utf8');
+
+    // `### ` with the title on the next line read as plain text under an empty heading
+    const body = md.slice(md.indexOf('# Product'), md.indexOf('```'));
+    assert.ok(!/^\s*#{1,6}\s*$/m.test(body), `empty heading:\n${md}`);
+    assert.ok(md.includes('\n# Product Name\n'), `leading empty div:\n${md}`);
+    assert.ok(md.includes('\n### Section after a break\n'), `leading break:\n${md}`);
+    assert.ok(md.includes('\n### [ann](https://example.com/members/ann) _member_\n'), `card of divs:\n${md}`);
+    assert.ok(md.includes('\n## First line<br>Second line\n'), `paragraphs:\n${md}`);
+    assert.ok(md.includes('\n#### Title<br>Subtitle\n'), `line break:\n${md}`);
+    assert.ok(/intro\n\n### Section/.test(md) && /_member_\n\n## First/.test(md), `blocks kept apart:\n${md}`);
+    // a table in a heading stays a table
+    assert.ok(/\n# Page title\n\n\|[^\n]*\n\|[^\n]*\n\| Like \| 404 \|\n/.test(md), `table in heading:\n${md}`);
+    // a `#` alone in text is escaped, or it is an empty heading
+    assert.ok(md.includes('\n\\#\n'), `lone #:\n${md}`);
+    assert.ok(md.includes('\n\\## two'), `## text:\n${md}`);
+    assert.ok(/\n[-*] \\#\n/.test(md), `lone # in a list item:\n${md}`);
+    // only a lone # line: mid-line and in code it stays as typed
+    assert.ok(md.includes('see **#** and #5'), `mid-line #:\n${md}`);
+    assert.ok(/```\n#\n/.test(md), `# in code:\n${md}`);
+  });
+
   it('a heading inside a table cell is written bold', async () => {
     const options: YarleOptions = {
       enexSources: [ `${testDataFolder}test-heading-in-cell.enex` ],

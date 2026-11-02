@@ -265,6 +265,22 @@ const squareTables = (node: HTMLElement) => {
     return node;
 };
 
+// turndown escapes `# ` at the start of a text but not a `#` alone (a code table's line for the
+// `#` key), and a line holding only `#`…`######` is an empty heading in CommonMark: the `#` was
+// not shown. Escape such lines, also as a list item or in a quote; not in code blocks.
+const LONE_HASH_LINE = /^(\s*(?:(?:[-*+]|\d+[.)])\s+|>\s*)*)(#{1,6})\s*$/;
+const escapeLoneHashLines = (md: string): string => {
+    let fence: string | undefined;
+    return md.split('\n').map(line => {
+        const marker = line.match(/^\s*(`{3,}|~{3,})/);
+        if (marker && (!fence || marker[1].startsWith(fence))) {
+            fence = fence ? undefined : marker[1];
+            return line;
+        }
+        return fence ? line : line.replace(LONE_HASH_LINE, '$1\\$2');
+    }).join('\n');
+};
+
 // A Markdown cell holds inline text only: a heading in a cell (a pasted CV's company names, the
 // "Customer Information" of a shop's receipt) showed its `#####` marks. Write it as a bold line,
 // as a heading in a cell reads; plain in a header cell, bold already. Layout tables are written
@@ -490,6 +506,10 @@ export const convertHtml2MdContent = (yarleOptions: YarleOptions, htmlContent: s
         contentInMd = getTurndownService(yarleOptions).turndown(prepared);
     } finally {
         cacheCodeBlockChecks(false);
+    }
+
+    if (!yarleOptions.keepMDCharactersOfENNotes) {
+        contentInMd = escapeLoneHashLines(contentInMd);
     }
 
     const newLinePlaceholder = new RegExp('<YARLE_NEWLINE_PLACEHOLDER>', 'g');
